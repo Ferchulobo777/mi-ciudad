@@ -25,6 +25,16 @@ export function obtenerBaseDeDatos(): Promise<SQLite.SQLiteDatabase> {
           idNotificacion TEXT,
           creadoEn TEXT NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS visitas (
+          id TEXT PRIMARY KEY NOT NULL,
+          usuarioId TEXT NOT NULL,
+          lugarId TEXT NOT NULL,
+          fechaHora TEXT NOT NULL,
+          origen TEXT NOT NULL,
+          fotoUri TEXT,
+          nota TEXT,
+          sincronizada INTEGER NOT NULL DEFAULT 0
+        );
       `);
       return db;
     });

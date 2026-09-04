@@ -2,9 +2,6 @@ import { Tabs } from "expo-router";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import { useTema } from "@/hooks/use-tema";
 
-// Mapa y Mi recorrido se suman cuando esas pantallas existan, siguiendo la
-// barra de cuatro tabs que ya está maquetada en Mockups-Propuestas (Mapa,
-// Agenda, Mi recorrido, Yo). Por ahora "Catálogo" hace las veces de Mapa.
 export default function LayoutApp() {
   const tema = useTema();
 
@@ -24,9 +21,14 @@ export default function LayoutApp() {
           tabBarIcon: ({ color, size }) => <Ionicons name="list-outline" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen name="lugar/[id]/index" options={{ href: null }} />
+      <Tabs.Screen name="lugar/[id]/visitar" options={{ href: null }} />
       <Tabs.Screen
-        name="lugar/[id]"
-        options={{ href: null }}
+        name="mapa"
+        options={{
+          title: "Mapa",
+          tabBarIcon: ({ color, size }) => <Ionicons name="map-outline" size={size} color={color} />,
+        }}
       />
       <Tabs.Screen
         name="agenda"
@@ -35,14 +37,15 @@ export default function LayoutApp() {
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar-outline" size={size} color={color} />,
         }}
       />
+      <Tabs.Screen name="evento/[id]" options={{ href: null }} />
       <Tabs.Screen
-        name="evento/[id]"
-        options={{ href: null }}
+        name="recorrido"
+        options={{
+          title: "Mi recorrido",
+          tabBarIcon: ({ color, size }) => <Ionicons name="navigate-outline" size={size} color={color} />,
+        }}
       />
-      <Tabs.Screen
-        name="favoritos"
-        options={{ href: null }}
-      />
+      <Tabs.Screen name="favoritos" options={{ href: null }} />
       <Tabs.Screen
         name="yo"
         options={{

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ActionSheetIOS, Alert, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActionSheetIOS, Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Image } from "expo-image";
 import { router } from "expo-router";
@@ -7,6 +7,7 @@ import { Ionicons } from "@react-native-vector-icons/ionicons";
 import { useSesion } from "@/hooks/use-sesion";
 import { useTema } from "@/hooks/use-tema";
 import { Boton } from "@/components/boton";
+import { FormularioLogin } from "@/components/formulario-login";
 import { elegirFotoDeGaleria, sacarFotoDePerfil } from "@/servicios/foto-perfil";
 import type { PreferenciaTema } from "@/servicios/preferencias";
 
@@ -48,16 +49,16 @@ export default function Yo() {
   }
 
   if (!token || !usuario) {
+    // El formulario va directo acá, sin una pantalla intermedia de "todavía
+    // no ingresaste": ingresar ya te deja en esta misma tab, ahora como
+    // usuario con sesión, sin un paso de navegación de más.
     return (
-      <SafeAreaView style={[styles.contenedor, { backgroundColor: tema.fondo }]}>
-        <Text style={[styles.titulo, { color: tema.textoPrincipal }]}>Todavía no ingresaste</Text>
-        <Text style={[styles.texto, { color: tema.textoSecundario }]}>
-          Ingresá o creá una cuenta para guardar tus favoritos y tu recorrido.
-        </Text>
-        <View style={styles.acciones}>
-          <Boton etiqueta="Ingresar" onPress={() => router.push("/login")} />
-          <Boton etiqueta="Crear cuenta" variante="secundario" onPress={() => router.push("/registro")} />
-        </View>
+      <SafeAreaView style={[styles.contenedor, { backgroundColor: tema.fondo, alignItems: "stretch" }]}>
+        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={styles.scrollLogin} keyboardShouldPersistTaps="handled">
+            <FormularioLogin mostrarSeguirSinCuenta={false} />
+          </ScrollView>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     );
   }
@@ -139,9 +140,7 @@ const styles = StyleSheet.create({
   },
   inicial: { color: "#FFFFFF", fontSize: 30, fontWeight: "800" },
   nombre: { fontSize: 20, fontWeight: "800" },
-  titulo: { fontSize: 20, fontWeight: "800", marginBottom: 8 },
-  texto: { fontSize: 14, textAlign: "center", marginBottom: 24, lineHeight: 20 },
-  acciones: { width: "100%", gap: 12 },
+  scrollLogin: { flexGrow: 1, justifyContent: "center", padding: 26 },
   tarjeta: { width: "100%", borderRadius: 16, padding: 16, gap: 4 },
   fila: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 10 },
   filaTexto: { flex: 1, fontSize: 14, fontWeight: "600" },

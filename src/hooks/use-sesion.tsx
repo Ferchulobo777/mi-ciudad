@@ -25,8 +25,12 @@ export function SesionProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Se busca un token de una sesión anterior antes de decidir a qué grupo de
-    // rutas entrar (RF03: la sesión sobrevive al cierre de la aplicación).
-    leerToken().then((tokenGuardado) => {
+    // rutas entrar (RF03: la sesión sobrevive al cierre de la aplicación). La
+    // lectura es casi instantánea, así que se le suma un mínimo de tiempo
+    // para que la presentación con la marca alcance a verse en vez de
+    // parpadear.
+    const esperaMinima = new Promise((resolver) => setTimeout(resolver, 600));
+    Promise.all([leerToken(), esperaMinima]).then(([tokenGuardado]) => {
       setToken(tokenGuardado);
       setEstaListo(true);
     });

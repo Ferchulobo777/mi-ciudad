@@ -5,12 +5,14 @@ import { router } from "expo-router";
 import type { Categoria, Lugar } from "@/tipos";
 import { useTema } from "@/hooks/use-tema";
 import { TarjetaLugar, ALTO_TARJETA_LUGAR } from "@/components/tarjeta-lugar";
+import { BannerSinConexion } from "@/components/banner-sin-conexion";
 import { listarCategorias, listarLugares, distanciaEnMetros } from "@/servicios/lugares";
+import { obtenerPosicionActual, type Posicion } from "@/servicios/ubicacion";
 
-// Centro de Colón. Se usa como posición fija del turista hasta que se conecte
-// expo-location: así se puede probar y mostrar el orden por distancia ya
-// mismo, sin bloquear el resto de la pantalla a que exista el sensor de GPS.
-const POSICION_DE_PRUEBA = { latitud: -32.2246, longitud: -58.1489 };
+// Centro de Colón: se usa como posición de respaldo mientras se resuelve el
+// GPS, o directamente si el turista niega el permiso de ubicación (RNF08, la
+// aplicación tiene que seguir siendo usable sin ubicación real).
+const POSICION_DE_RESPALDO: Posicion = { latitud: -32.2246, longitud: -58.1489 };
 
 const ALTO_ITEM = ALTO_TARJETA_LUGAR + 10;
 
@@ -21,9 +23,16 @@ export default function Catalogo() {
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState<string | null>(null);
   const [busqueda, setBusqueda] = useState("");
   const [cargando, setCargando] = useState(true);
+  const [posicion, setPosicion] = useState<Posicion>(POSICION_DE_RESPALDO);
 
   useEffect(() => {
     listarCategorias().then(setCategorias);
+  }, []);
+
+  useEffect(() => {
+    obtenerPosicionActual().then((real) => {
+      if (real) setPosicion(real);
+    });
   }, []);
 
   useEffect(() => {
@@ -48,9 +57,9 @@ export default function Catalogo() {
   const lugaresOrdenados = useMemo(() => {
     return [...lugares].sort(
       (a, b) =>
-        distanciaEnMetros(POSICION_DE_PRUEBA, a.coordenadas) - distanciaEnMetros(POSICION_DE_PRUEBA, b.coordenadas),
+        distanciaEnMetros(posicion, a.coordenadas) - distanciaEnMetros(posicion, b.coordenadas),
     );
-  }, [lugares]);
+  }, [lugares, posicion]);
 
   const categoriaPorId = useMemo(() => new Map(categorias.map((c) => [c.id, c])), [categorias]);
 
@@ -84,7 +93,7 @@ export default function Catalogo() {
           <TarjetaLugar
             lugar={item}
             categoria={categoriaPorId.get(item.categoriaId)}
-            distanciaEnMetros={distanciaEnMetros(POSICION_DE_PRUEBA, item.coordenadas)}
+            distanciaEnMetros={distanciaEnMetros(posicion, item.coordenadas)}
             onPress={() => router.push({ pathname: "/lugar/[id]", params: { id: item.id } })}
           />
         )}
@@ -94,6 +103,7 @@ export default function Catalogo() {
 
   return (
     <SafeAreaView style={[styles.contenedor, { backgroundColor: tema.fondo }]} edges={["top"]}>
+      <BannerSinConexion />
       <View style={styles.encabezado}>
         <Text style={[styles.titulo, { color: tema.textoPrincipal }]}>Catálogo</Text>
         <TextInput

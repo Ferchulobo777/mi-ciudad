@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { Categoria, Lugar } from "@/tipos";
 import { useTema } from "@/hooks/use-tema";
-import { estaAbiertoAhora } from "@/servicios/lugares";
+import { estaAbiertoAhora, formatearDistancia } from "@/servicios/lugares";
+import { ImagenLugar } from "@/components/imagen-lugar";
 
 export const ALTO_TARJETA_LUGAR = 76;
 
@@ -10,11 +11,6 @@ interface Props {
   categoria: Categoria | undefined;
   distanciaEnMetros: number | null;
   onPress: () => void;
-}
-
-function formatearDistancia(metros: number): string {
-  if (metros < 1000) return `${Math.round(metros / 10) * 10} m`;
-  return `${(metros / 1000).toFixed(1)} km`;
 }
 
 export function TarjetaLugar({ lugar, categoria, distanciaEnMetros, onPress }: Props) {
@@ -31,7 +27,7 @@ export function TarjetaLugar({ lugar, categoria, distanciaEnMetros, onPress }: P
         pressed && { opacity: 0.85 },
       ]}
     >
-      <View style={[styles.miniatura, { backgroundColor: categoria?.color ?? tema.textoSecundario }]} />
+      <ImagenLugar categoria={categoria} tamañoIcono={18} style={styles.miniatura} />
       <View style={styles.info}>
         <Text style={[styles.nombre, { color: tema.textoPrincipal }]} numberOfLines={1}>
           {lugar.nombre}

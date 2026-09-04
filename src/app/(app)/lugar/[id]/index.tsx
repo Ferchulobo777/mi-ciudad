@@ -7,6 +7,7 @@ import type { Lugar } from "@/tipos";
 import { useTema } from "@/hooks/use-tema";
 import { useSesion } from "@/hooks/use-sesion";
 import { Boton } from "@/components/boton";
+import { ImagenLugar } from "@/components/imagen-lugar";
 import { obtenerLugar, estaAbiertoAhora } from "@/servicios/lugares";
 import { categoriasSimuladas } from "@/mocks/categorias";
 import { esFavorito, alternarFavorito } from "@/servicios/favoritos";
@@ -78,7 +79,8 @@ export default function DetalleLugar() {
 
   return (
     <View style={{ flex: 1, backgroundColor: tema.fondo }}>
-      <View style={[styles.foto, { backgroundColor: categoria?.color ?? tema.primario }]}>
+      <View style={styles.foto}>
+        <ImagenLugar categoria={categoria} tamañoIcono={64} style={StyleSheet.absoluteFill} />
         <SafeAreaView edges={["top"]} style={styles.filaSuperior}>
           <IconBoton nombre="chevron-back" onPress={() => router.back()} />
           <IconBoton
@@ -117,7 +119,15 @@ export default function DetalleLugar() {
             variante="secundario"
             onPress={() => abrirComoLlegar(lugar.coordenadas.latitud, lugar.coordenadas.longitud, lugar.nombre)}
           />
-          <Boton etiqueta="Registrar visita (próximamente)" variante="texto" onPress={() => {}} deshabilitado />
+          <Boton
+            etiqueta="Registrar visita"
+            variante="texto"
+            onPress={() =>
+              sesion.usuario
+                ? router.push({ pathname: "/lugar/[id]/visitar", params: { id: lugar.id } })
+                : router.push("/login")
+            }
+          />
         </View>
       </ScrollView>
     </View>
@@ -134,7 +144,7 @@ function IconBoton({ nombre, color, onPress }: { nombre: string; color?: string;
 
 const styles = StyleSheet.create({
   centrado: { flex: 1, alignItems: "center", justifyContent: "center", gap: 12 },
-  foto: { height: 240 },
+  foto: { height: 240, overflow: "hidden" },
   filaSuperior: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 16, paddingTop: 8 },
   iconBoton: {
     width: 36,
