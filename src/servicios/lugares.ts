@@ -6,9 +6,10 @@ function simularLatenciaDeRed<T>(valor: T, ms = 400): Promise<T> {
   return new Promise((resolver) => setTimeout(() => resolver(valor), ms));
 }
 
-// Fórmula de haversine, para poder ordenar por distancia sin depender todavía
-// de expo-location: la posición del turista se recibe como parámetro y se
-// simula desde la pantalla mientras no esté conectado el sensor real de GPS.
+// Fórmula de haversine para la distancia entre dos coordenadas. Recibe la
+// posición como parámetro en vez de leer el GPS acá adentro, así se puede
+// usar tanto con la posición real (Catálogo, Mapa) como con la de respaldo
+// cuando el turista no dio permiso de ubicación.
 export function distanciaEnMetros(a: { latitud: number; longitud: number }, b: { latitud: number; longitud: number }) {
   const radioTierra = 6371000;
   const radianes = (grados: number) => (grados * Math.PI) / 180;
@@ -18,6 +19,11 @@ export function distanciaEnMetros(a: { latitud: number; longitud: number }, b: {
     Math.sin(dLat / 2) ** 2 +
     Math.cos(radianes(a.latitud)) * Math.cos(radianes(b.latitud)) * Math.sin(dLon / 2) ** 2;
   return radioTierra * 2 * Math.atan2(Math.sqrt(factor), Math.sqrt(1 - factor));
+}
+
+export function formatearDistancia(metros: number): string {
+  if (metros < 1000) return `${Math.round(metros / 10) * 10} m`;
+  return `${(metros / 1000).toFixed(1)} km`;
 }
 
 export async function listarCategorias(): Promise<Categoria[]> {
