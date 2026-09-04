@@ -40,6 +40,10 @@ export default function LayoutApp() {
         options={{ href: null }}
       />
       <Tabs.Screen
+        name="favoritos"
+        options={{ href: null }}
+      />
+      <Tabs.Screen
         name="yo"
         options={{
           title: "Yo",

@@ -44,6 +44,11 @@ export async function listarLugares(filtro: FiltroLugares = {}): Promise<Lugar[]
   return resultado;
 }
 
+export async function obtenerLugaresPorIds(ids: string[]): Promise<Lugar[]> {
+  await simularLatenciaDeRed(null);
+  return lugaresSimulados.filter((lugar) => ids.includes(lugar.id));
+}
+
 export async function obtenerLugar(id: string): Promise<Lugar | null> {
   await simularLatenciaDeRed(null);
   return lugaresSimulados.find((lugar) => lugar.id === id) ?? null;

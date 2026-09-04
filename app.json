@@ -35,7 +35,15 @@
       ],
       "expo-secure-store",
       "@react-native-vector-icons/ionicons",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-image",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Mi Ciudad usa tus fotos para elegir tu foto de perfil.",
+          "cameraPermission": "Mi Ciudad usa la cámara para sacar tu foto de perfil y para registrar tus visitas."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
