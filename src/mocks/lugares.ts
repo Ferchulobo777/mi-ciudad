@@ -75,7 +75,7 @@ export const lugaresSimulados: Lugar[] = [
     telefono: "+54 3447 421000",
     sitioWeb: null,
     precioEntrada: 1500,
-    audioguia: { url: "https://cdn.miciudad.app/audioguias/molino-forclaz.mp3", duracionSegundos: 252, idioma: "es" },
+    audioguia: { url: "https://cdn.miciudad.app/audioguias/molino-forclaz.mp3", duracionSegundos: 33, idioma: "es" },
     codigoQr: "QR-MOLINO-FORCLAZ",
     accesible: false,
     activo: true,

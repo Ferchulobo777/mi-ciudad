@@ -8,6 +8,7 @@ import { useTema } from "@/hooks/use-tema";
 import { useSesion } from "@/hooks/use-sesion";
 import { Boton } from "@/components/boton";
 import { ImagenLugar } from "@/components/imagen-lugar";
+import { ReproductorAudioguia } from "@/components/reproductor-audioguia";
 import { obtenerLugar, estaAbiertoAhora } from "@/servicios/lugares";
 import { categoriasSimuladas } from "@/mocks/categorias";
 import { esFavorito, alternarFavorito } from "@/servicios/favoritos";
@@ -82,10 +83,11 @@ export default function DetalleLugar() {
       <View style={styles.foto}>
         <ImagenLugar categoria={categoria} tamañoIcono={64} style={StyleSheet.absoluteFill} />
         <SafeAreaView edges={["top"]} style={styles.filaSuperior}>
-          <IconBoton nombre="chevron-back" onPress={() => router.back()} />
+          <IconBoton nombre="chevron-back" etiquetaAccesibilidad="Volver" onPress={() => router.back()} />
           <IconBoton
             nombre={favorito ? "heart" : "heart-outline"}
             color={favorito ? tema.acento : undefined}
+            etiquetaAccesibilidad={favorito ? "Quitar de favoritos" : "Agregar a favoritos"}
             onPress={tocarFavorito}
           />
         </SafeAreaView>
@@ -110,10 +112,9 @@ export default function DetalleLugar() {
           <Text style={{ color: tema.textoSecundario, marginBottom: 20 }}>Entrada: ${lugar.precioEntrada}</Text>
         )}
 
-        <View style={{ gap: 10 }}>
-          {lugar.audioguia ? (
-            <Boton etiqueta="Escuchar audioguía (próximamente)" variante="secundario" onPress={() => {}} deshabilitado />
-          ) : null}
+        {lugar.audioguia && <ReproductorAudioguia audioguia={lugar.audioguia} />}
+
+        <View style={{ gap: 10, marginTop: lugar.audioguia ? 16 : 0 }}>
           <Boton
             etiqueta="Cómo llegar"
             variante="secundario"
@@ -134,9 +135,24 @@ export default function DetalleLugar() {
   );
 }
 
-function IconBoton({ nombre, color, onPress }: { nombre: string; color?: string; onPress: () => void }) {
+function IconBoton({
+  nombre,
+  color,
+  etiquetaAccesibilidad,
+  onPress,
+}: {
+  nombre: string;
+  color?: string;
+  etiquetaAccesibilidad: string;
+  onPress: () => void;
+}) {
   return (
-    <Text onPress={onPress} style={styles.iconBoton}>
+    <Text
+      onPress={onPress}
+      style={styles.iconBoton}
+      accessibilityRole="button"
+      accessibilityLabel={etiquetaAccesibilidad}
+    >
       <Ionicons name={nombre as never} size={20} color={color ?? "#1F2A2E"} />
     </Text>
   );

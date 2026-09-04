@@ -1,0 +1,13 @@
+appId: com.miciudad.app
+---
+- launchApp
+- tapOn: "Yo"
+- tapOn:
+    id: "campo-email"
+- inputText: "maria.villalba@correo.com"
+- tapOn:
+    id: "campo-contrasena"
+- inputText: "colon2026"
+- tapOn: "Ingresar"
+- assertVisible: "María Villalba"
+- assertVisible: "Cerrar sesión"

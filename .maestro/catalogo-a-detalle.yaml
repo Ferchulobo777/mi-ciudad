@@ -1,0 +1,14 @@
+appId: com.miciudad.app
+---
+# Flujo sin sesión iniciada: navega del Catálogo al Detalle de un lugar y
+# confirma que "Agregar a favoritos" exige iniciar sesión (RF06), en vez de
+# intentar marcar el favorito directamente. Se evita depender del estado
+# guardado en SQLite (favorito ya marcado o no) para que el flujo dé el mismo
+# resultado sin importar cuántas veces se haya corrido antes.
+- launchApp
+- assertVisible: "Catálogo"
+- tapOn: "Termas de Colón"
+- assertVisible: "Cómo llegar"
+- tapOn: "Agregar a favoritos"
+- assertVisible: "Ingresar"
+- tapOn: "Seguir sin cuenta"

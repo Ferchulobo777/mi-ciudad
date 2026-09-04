@@ -107,6 +107,7 @@ export function FormularioLogin({ onExito, mostrarSeguirSinCuenta = true }: Prop
       ) : null}
 
       <CampoTexto
+        testID="campo-email"
         etiqueta="Correo electrónico"
         value={email}
         onChangeText={setEmail}
@@ -118,6 +119,7 @@ export function FormularioLogin({ onExito, mostrarSeguirSinCuenta = true }: Prop
         textContentType="emailAddress"
       />
       <CampoTexto
+        testID="campo-contrasena"
         etiqueta="Contraseña"
         value={contrasena}
         onChangeText={setContrasena}
