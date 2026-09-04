@@ -1,0 +1,516 @@
+openapi: 3.0.3
+info:
+  title: Mi Ciudad — API (contrato preliminar)
+  version: 0.1.0
+  description: >
+    Contrato preliminar, escrito a partir del PRD de la propuesta "Mi Ciudad,
+    guía turística de Colón". La API real la provee la cátedra y todavía no
+    está disponible. Este documento fija la forma exacta de cada recurso para
+    que el equipo pueda construir la capa de servicios (src/servicios/) contra
+    datos simulados (src/mocks/) sin tener que reescribirla cuando la API real
+    llegue. Se reemplaza o se ajusta en cuanto la cátedra publique su propia
+    especificación.
+servers:
+  - url: https://api.colon.tur.ar
+    description: Placeholder. La URL real la define la cátedra.
+
+security:
+  - bearerAuth: []
+
+tags:
+  - name: auth
+  - name: lugares
+  - name: categorias
+  - name: eventos
+  - name: favoritos
+  - name: visitas
+  - name: usuarios
+
+paths:
+  /auth/registro:
+    post:
+      tags: [auth]
+      summary: Crear una cuenta de usuario
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [nombre, email, contrasena]
+              properties:
+                nombre: { type: string }
+                email: { type: string, format: email }
+                contrasena: { type: string, format: password }
+      responses:
+        "201":
+          description: Cuenta creada, sesión iniciada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RespuestaSesion"
+        "400":
+          $ref: "#/components/responses/Error"
+
+  /auth/login:
+    post:
+      tags: [auth]
+      summary: Iniciar sesión
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, contrasena]
+              properties:
+                email: { type: string, format: email }
+                contrasena: { type: string, format: password }
+      responses:
+        "200":
+          description: Sesión iniciada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RespuestaSesion"
+        "401":
+          $ref: "#/components/responses/Error"
+
+  /usuarios/me:
+    get:
+      tags: [usuarios]
+      summary: Datos del usuario autenticado
+      responses:
+        "200":
+          description: Usuario actual
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaUsuario"
+    patch:
+      tags: [usuarios]
+      summary: Actualizar preferencias del usuario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Preferencias"
+      responses:
+        "200":
+          description: Preferencias actualizadas
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaUsuario"
+
+  /lugares:
+    get:
+      tags: [lugares]
+      summary: Listar lugares del catálogo
+      security: []
+      parameters:
+        - name: categoriaId
+          in: query
+          schema: { type: string }
+        - name: q
+          in: query
+          description: Búsqueda por nombre
+          schema: { type: string }
+        - name: lat
+          in: query
+          schema: { type: number, format: double }
+        - name: lon
+          in: query
+          schema: { type: number, format: double }
+        - name: pagina
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: porPagina
+          in: query
+          schema: { type: integer, default: 20 }
+      responses:
+        "200":
+          description: Listado paginado de lugares
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaLugares"
+
+  /lugares/{id}:
+    get:
+      tags: [lugares]
+      summary: Detalle de un lugar
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Lugar encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaLugar"
+        "404":
+          description: LUGAR_NO_ENCONTRADO
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RespuestaError"
+
+  /categorias:
+    get:
+      tags: [categorias]
+      summary: Listar categorías del catálogo
+      security: []
+      responses:
+        "200":
+          description: Listado de categorías, ya ordenado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaCategorias"
+
+  /eventos:
+    get:
+      tags: [eventos]
+      summary: Listar eventos de la agenda
+      security: []
+      parameters:
+        - name: desde
+          in: query
+          description: Fecha ISO 8601. Por defecto, hoy.
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: Eventos ordenados por fecha de inicio
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaEventos"
+
+  /eventos/{id}:
+    get:
+      tags: [eventos]
+      summary: Detalle de un evento
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Evento encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaEvento"
+
+  /favoritos:
+    get:
+      tags: [favoritos]
+      summary: Listar los favoritos del usuario autenticado
+      responses:
+        "200":
+          description: Listado de favoritos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaFavoritos"
+    post:
+      tags: [favoritos]
+      summary: Marcar un lugar como favorito
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [lugarId]
+              properties:
+                lugarId: { type: string }
+      responses:
+        "201":
+          description: Favorito creado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaFavorito"
+
+  /favoritos/{id}:
+    delete:
+      tags: [favoritos]
+      summary: Quitar un favorito
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "204":
+          description: Favorito eliminado
+
+  /visitas:
+    get:
+      tags: [visitas]
+      summary: Listar el recorrido del usuario autenticado
+      responses:
+        "200":
+          description: Visitas ordenadas de la más nueva a la más vieja
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaVisitas"
+    post:
+      tags: [visitas]
+      summary: Registrar una visita
+      description: >
+        Se llama también para subir visitas que quedaron encoladas en el
+        teléfono con sincronizada en false por falta de señal.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NuevaVisita"
+      responses:
+        "201":
+          description: Visita registrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EnvolturaVisita"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: El token va en la cabecera Authorization, Bearer token. Se guarda en expo-secure-store, nunca en kv-store.
+
+  responses:
+    Error:
+      description: Error de negocio o de validación
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/RespuestaError"
+
+  schemas:
+    Meta:
+      type: object
+      properties:
+        total: { type: integer }
+        pagina: { type: integer }
+        porPagina: { type: integer }
+
+    RespuestaError:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            codigo: { type: string, example: LUGAR_NO_ENCONTRADO }
+            mensaje: { type: string, example: No existe ese lugar. }
+
+    Coordenadas:
+      type: object
+      required: [latitud, longitud]
+      properties:
+        latitud: { type: number, format: double }
+        longitud: { type: number, format: double }
+
+    Horario:
+      type: object
+      properties:
+        dia:
+          type: integer
+          minimum: 0
+          maximum: 6
+          description: 0 es domingo
+        abre: { type: string, example: "09:00" }
+        cierra: { type: string, example: "19:00" }
+
+    Audioguia:
+      type: object
+      properties:
+        url: { type: string, format: uri }
+        duracionSegundos: { type: integer }
+        idioma: { type: string, enum: [es, en, pt] }
+
+    Lugar:
+      type: object
+      properties:
+        id: { type: string }
+        nombre: { type: string }
+        categoriaId: { type: string }
+        descripcionCorta: { type: string }
+        descripcion: { type: string }
+        coordenadas: { $ref: "#/components/schemas/Coordenadas" }
+        direccion: { type: string }
+        imagenes:
+          type: array
+          items: { type: string, format: uri }
+        horarios:
+          type: array
+          items: { $ref: "#/components/schemas/Horario" }
+        telefono: { type: string, nullable: true }
+        sitioWeb: { type: string, nullable: true }
+        precioEntrada: { type: number, nullable: true }
+        audioguia:
+          allOf: [{ $ref: "#/components/schemas/Audioguia" }]
+          nullable: true
+        codigoQr: { type: string, nullable: true }
+        accesible: { type: boolean }
+        activo: { type: boolean }
+        actualizadoEn: { type: string, format: date-time }
+
+    Categoria:
+      type: object
+      properties:
+        id: { type: string }
+        nombre: { type: string }
+        icono: { type: string, description: Nombre del ícono de Ionicons }
+        color: { type: string, example: "#8E5A4A" }
+        orden: { type: integer }
+
+    Evento:
+      type: object
+      properties:
+        id: { type: string }
+        titulo: { type: string }
+        descripcion: { type: string }
+        lugarId: { type: string, nullable: true }
+        direccionLibre: { type: string, nullable: true }
+        coordenadas:
+          allOf: [{ $ref: "#/components/schemas/Coordenadas" }]
+          nullable: true
+        inicio: { type: string, format: date-time }
+        fin: { type: string, format: date-time, nullable: true }
+        imagenUrl: { type: string, nullable: true }
+        precio: { type: number, nullable: true }
+        estado:
+          type: string
+          enum: [programado, suspendido, cancelado, finalizado]
+
+    Preferencias:
+      type: object
+      properties:
+        categoriasFavoritas:
+          type: array
+          items: { type: string }
+        avisarProximidad: { type: boolean }
+        radioAvisoMetros: { type: integer, enum: [100, 250, 500] }
+        tema: { type: string, enum: [claro, oscuro, sistema] }
+
+    Usuario:
+      type: object
+      properties:
+        id: { type: string }
+        nombre: { type: string }
+        email: { type: string, format: email }
+        avatarUrl: { type: string, nullable: true }
+        creadoEn: { type: string, format: date-time }
+        preferencias: { $ref: "#/components/schemas/Preferencias" }
+
+    Favorito:
+      type: object
+      properties:
+        id: { type: string }
+        usuarioId: { type: string }
+        lugarId: { type: string }
+        creadoEn: { type: string, format: date-time }
+
+    NuevaVisita:
+      type: object
+      required: [lugarId, fechaHora, origen]
+      properties:
+        lugarId: { type: string }
+        fechaHora: { type: string, format: date-time }
+        origen: { type: string, enum: [qr, gps, manual] }
+        fotoUri: { type: string, nullable: true }
+        nota: { type: string, nullable: true }
+
+    Visita:
+      allOf:
+        - $ref: "#/components/schemas/NuevaVisita"
+        - type: object
+          properties:
+            id: { type: string }
+            usuarioId: { type: string }
+            sincronizada:
+              type: boolean
+              description: >
+                False mientras la visita solo existe en el teléfono. Una
+                visita se registra parada frente al lugar, donde puede no
+                haber señal, así que se guarda localmente primero y se sube
+                cuando vuelve la conexión.
+
+    RespuestaSesion:
+      type: object
+      properties:
+        token: { type: string }
+        usuario: { $ref: "#/components/schemas/Usuario" }
+
+    EnvolturaLugares:
+      type: object
+      properties:
+        datos:
+          type: array
+          items: { $ref: "#/components/schemas/Lugar" }
+        meta: { $ref: "#/components/schemas/Meta" }
+    EnvolturaLugar:
+      type: object
+      properties:
+        datos: { $ref: "#/components/schemas/Lugar" }
+    EnvolturaCategorias:
+      type: object
+      properties:
+        datos:
+          type: array
+          items: { $ref: "#/components/schemas/Categoria" }
+        meta: { $ref: "#/components/schemas/Meta" }
+    EnvolturaEventos:
+      type: object
+      properties:
+        datos:
+          type: array
+          items: { $ref: "#/components/schemas/Evento" }
+        meta: { $ref: "#/components/schemas/Meta" }
+    EnvolturaEvento:
+      type: object
+      properties:
+        datos: { $ref: "#/components/schemas/Evento" }
+    EnvolturaFavoritos:
+      type: object
+      properties:
+        datos:
+          type: array
+          items: { $ref: "#/components/schemas/Favorito" }
+        meta: { $ref: "#/components/schemas/Meta" }
+    EnvolturaFavorito:
+      type: object
+      properties:
+        datos: { $ref: "#/components/schemas/Favorito" }
+    EnvolturaVisitas:
+      type: object
+      properties:
+        datos:
+          type: array
+          items: { $ref: "#/components/schemas/Visita" }
+        meta: { $ref: "#/components/schemas/Meta" }
+    EnvolturaVisita:
+      type: object
+      properties:
+        datos: { $ref: "#/components/schemas/Visita" }
+    EnvolturaUsuario:
+      type: object
+      properties:
+        datos: { $ref: "#/components/schemas/Usuario" }

@@ -1,0 +1,32 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 390, "h": 844 },
+    { "file": "MiCiudad-Detalle.dc.html", "x": 470, "y": 0, "w": 390, "h": 844 },
+
+    { "file": "Reservas-Grilla.dc.html", "x": 0, "y": 984, "w": 390, "h": 844 },
+    { "file": "Reservas-MiReserva.dc.html", "x": 470, "y": 984, "w": 390, "h": 844 },
+
+    { "file": "ReporteCiudadano-Nuevo.dc.html", "x": 0, "y": 1968, "w": 390, "h": 844 },
+    { "file": "ReporteCiudadano-Detalle.dc.html", "x": 470, "y": 1968, "w": 390, "h": 844 },
+
+    { "file": "Directorio-Busqueda.dc.html", "x": 0, "y": 2952, "w": 390, "h": 844 },
+    { "file": "Directorio-Ficha.dc.html", "x": 470, "y": 2952, "w": 390, "h": 844 },
+
+    { "file": "Transporte-Home.dc.html", "x": 0, "y": 3936, "w": 390, "h": 844 },
+    { "file": "Transporte-Parada.dc.html", "x": 470, "y": 3936, "w": 390, "h": 844 }
+  ],
+  "annotations": [
+    { "id": "titulo-principal", "x": 0, "y": -210, "w": 860, "text": "Trabajo Integrador — Desarrollo para Móviles\nMockups de las 5 propuestas, cada una con su propia paleta de colores" },
+
+    { "id": "nota-mi-ciudad", "x": 0, "y": -100, "w": 850, "text": "1° recomendada · Mi Ciudad (Colón) — paleta \"Costa Entrerriana\": Azul Río #0B6E8C, Verde Palmar #3F7D45, Terracota Atardecer #D96C3F" },
+
+    { "id": "nota-reservas", "x": 0, "y": 894, "w": 850, "text": "2° opción · Reservas Deportivas (Villaguay) — paleta \"Cancha Activa\": Verde Cancha #2E9E4F, Naranja Turno #F26A21, Azul Noche #1B3A5C" },
+
+    { "id": "nota-reporte", "x": 0, "y": 1878, "w": 850, "text": "3° opción · Reporte Ciudadano (Gualeguaychú) — paleta \"Confianza Municipal\": Azul Institucional #1E5A8E, Naranja Alerta #E8792A, estados por color" },
+
+    { "id": "nota-directorio", "x": 0, "y": 2862, "w": 850, "text": "4° opción · Directorio de Comercios (Concepción del Uruguay) — paleta \"Vida Comercial\": Rojo Vidriera #C6402F, Verde Salvia #4C8C6B, Dorado Reseña #D9A544" },
+
+    { "id": "nota-transporte", "x": 0, "y": 3846, "w": 850, "text": "5° opción · Transporte Público (Paraná) — paleta \"Movimiento Urbano\": Azul Transporte #16528C, Amarillo Señal #F2B705, color por línea" }
+  ],
+  "launch": { "view": "canvas" }
+}

@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body{margin:0;background:#FBF7F0;}
+  text{font-family:'Segoe UI', system-ui, sans-serif;}
+  .attr-n{font-family:Consolas, monospace;font-size:13px;fill:#1F2A2E;}
+  .attr-t{font-family:Consolas, monospace;font-size:13px;fill:#5C6B6E;}
+  .rel{font-size:12px;fill:#3A4548;font-weight:600;}
+  .mult{font-size:12px;fill:#0B6E8C;font-weight:700;}
+</style>
+</head>
+<body>
+<svg width="1400" height="860" viewBox="0 0 1400 860" xmlns="http://www.w3.org/2000/svg">
+
+  <rect x="0" y="0" width="1400" height="860" fill="#FBF7F0"/>
+
+  <!-- ===== Categoria ===== -->
+  <g>
+    <rect x="40" y="60" width="230" height="170" rx="8" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+    <rect x="40" y="60" width="230" height="34" rx="8" fill="#0B6E8C"/>
+    <rect x="40" y="86" width="230" height="8" fill="#0B6E8C"/>
+    <text x="155" y="82" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Categoria</text>
+    <text x="56" y="116"><tspan class="attr-n">id</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="56" y="138"><tspan class="attr-n">nombre</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="56" y="160"><tspan class="attr-n">icono</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="56" y="182"><tspan class="attr-n">color</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="56" y="204"><tspan class="attr-n">orden</tspan><tspan class="attr-t">: int</tspan></text>
+  </g>
+
+  <!-- ===== Lugar ===== -->
+  <g>
+    <rect x="340" y="30" width="290" height="258" rx="8" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+    <rect x="340" y="30" width="290" height="34" rx="8" fill="#0B6E8C"/>
+    <rect x="340" y="56" width="290" height="8" fill="#0B6E8C"/>
+    <text x="485" y="52" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Lugar</text>
+    <text x="356" y="86"><tspan class="attr-n">id</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="356" y="108"><tspan class="attr-n">nombre</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="356" y="130"><tspan class="attr-n">categoriaId</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="356" y="152"><tspan class="attr-n">descripcionCorta</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="356" y="174"><tspan class="attr-n">coordenadas</tspan><tspan class="attr-t">: Coordenadas</tspan></text>
+    <text x="356" y="196"><tspan class="attr-n">horarios</tspan><tspan class="attr-t">: Horario[]</tspan></text>
+    <text x="356" y="218"><tspan class="attr-n">audioguia</tspan><tspan class="attr-t">: Audioguia?</tspan></text>
+    <text x="356" y="240"><tspan class="attr-n">accesible</tspan><tspan class="attr-t">: boolean</tspan></text>
+    <text x="356" y="262"><tspan class="attr-n">activo</tspan><tspan class="attr-t">: boolean</tspan></text>
+  </g>
+
+  <!-- ===== Evento ===== -->
+  <g>
+    <rect x="700" y="60" width="260" height="192" rx="8" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+    <rect x="700" y="60" width="260" height="34" rx="8" fill="#0B6E8C"/>
+    <rect x="700" y="86" width="260" height="8" fill="#0B6E8C"/>
+    <text x="830" y="82" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Evento</text>
+    <text x="716" y="116"><tspan class="attr-n">id</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="716" y="138"><tspan class="attr-n">titulo</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="716" y="160"><tspan class="attr-n">lugarId</tspan><tspan class="attr-t">: string?</tspan></text>
+    <text x="716" y="182"><tspan class="attr-n">direccionLibre</tspan><tspan class="attr-t">: string?</tspan></text>
+    <text x="716" y="204"><tspan class="attr-n">inicio / fin</tspan><tspan class="attr-t">: datetime</tspan></text>
+    <text x="716" y="226"><tspan class="attr-n">estado</tspan><tspan class="attr-t">: enum</tspan></text>
+  </g>
+
+  <!-- ===== Usuario ===== -->
+  <g>
+    <rect x="1080" y="60" width="260" height="170" rx="8" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+    <rect x="1080" y="60" width="260" height="34" rx="8" fill="#0B6E8C"/>
+    <rect x="1080" y="86" width="260" height="8" fill="#0B6E8C"/>
+    <text x="1210" y="82" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Usuario</text>
+    <text x="1096" y="116"><tspan class="attr-n">id</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="1096" y="138"><tspan class="attr-n">nombre</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="1096" y="160"><tspan class="attr-n">email</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="1096" y="182"><tspan class="attr-n">creadoEn</tspan><tspan class="attr-t">: datetime</tspan></text>
+    <text x="1096" y="204"><tspan class="attr-n">preferencias</tspan><tspan class="attr-t">: Preferencias</tspan></text>
+  </g>
+
+  <!-- ===== Preferencias ===== -->
+  <g>
+    <rect x="1080" y="310" width="260" height="148" rx="8" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+    <rect x="1080" y="310" width="260" height="34" rx="8" fill="#0B6E8C"/>
+    <rect x="1080" y="336" width="260" height="8" fill="#0B6E8C"/>
+    <text x="1210" y="332" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Preferencias</text>
+    <text x="1096" y="366"><tspan class="attr-n">categoriasFavoritas</tspan><tspan class="attr-t">: string[]</tspan></text>
+    <text x="1096" y="388"><tspan class="attr-n">avisarProximidad</tspan><tspan class="attr-t">: boolean</tspan></text>
+    <text x="1096" y="410"><tspan class="attr-n">radioAvisoMetros</tspan><tspan class="attr-t">: int</tspan></text>
+    <text x="1096" y="432"><tspan class="attr-n">tema</tspan><tspan class="attr-t">: enum</tspan></text>
+  </g>
+
+  <!-- ===== Favorito ===== -->
+  <g>
+    <rect x="340" y="400" width="250" height="148" rx="8" fill="#FFFFFF" stroke="#D96C3F" stroke-width="1.6"/>
+    <rect x="340" y="400" width="250" height="34" rx="8" fill="#D96C3F"/>
+    <rect x="340" y="426" width="250" height="8" fill="#D96C3F"/>
+    <text x="465" y="422" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Favorito</text>
+    <text x="356" y="456"><tspan class="attr-n">id</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="356" y="478"><tspan class="attr-n">usuarioId</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="356" y="500"><tspan class="attr-n">lugarId</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="356" y="522"><tspan class="attr-n">creadoEn</tspan><tspan class="attr-t">: datetime</tspan></text>
+  </g>
+
+  <!-- ===== Visita ===== -->
+  <g>
+    <rect x="650" y="400" width="290" height="236" rx="8" fill="#FFFFFF" stroke="#D96C3F" stroke-width="1.6"/>
+    <rect x="650" y="400" width="290" height="34" rx="8" fill="#D96C3F"/>
+    <rect x="650" y="426" width="290" height="8" fill="#D96C3F"/>
+    <text x="795" y="422" text-anchor="middle" fill="#FFFFFF" font-size="15" font-weight="700">Visita</text>
+    <text x="666" y="456"><tspan class="attr-n">id</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="666" y="478"><tspan class="attr-n">usuarioId</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="666" y="500"><tspan class="attr-n">lugarId</tspan><tspan class="attr-t">: string</tspan></text>
+    <text x="666" y="522"><tspan class="attr-n">fechaHora</tspan><tspan class="attr-t">: datetime</tspan></text>
+    <text x="666" y="544"><tspan class="attr-n">origen</tspan><tspan class="attr-t">: qr | gps | manual</tspan></text>
+    <text x="666" y="566"><tspan class="attr-n">fotoUri / nota</tspan><tspan class="attr-t">: string?</tspan></text>
+    <text x="666" y="588"><tspan class="attr-n">sincronizada</tspan><tspan class="attr-t">: boolean</tspan></text>
+    <text x="666" y="610" font-size="11" fill="#8A5F1B">false mientras solo existe en el teléfono</text>
+  </g>
+
+  <!-- ===== relationship lines + labels, drawn on top so nothing gets clipped by a box ===== -->
+  <g stroke="#3F7D45" stroke-width="2" fill="none">
+    <line x1="270" y1="150" x2="340" y2="150"/>
+    <line x1="630" y1="150" x2="700" y2="150"/>
+    <line x1="465" y1="288" x2="465" y2="400"/>
+    <path d="M1080,150 L1000,150 L1000,470 L590,470"/>
+    <line x1="1145" y1="230" x2="940" y2="460"/>
+    <line x1="600" y1="288" x2="700" y2="400"/>
+  </g>
+  <g stroke="#D96C3F" stroke-width="2">
+    <line x1="1210" y1="230" x2="1210" y2="310"/>
+  </g>
+  <polygon points="1210,230 1200,222 1210,214 1220,222" fill="#D96C3F"/>
+
+  <g>
+    <rect x="278" y="128" width="72" height="18" fill="#FBF7F0"/>
+    <text x="314" y="141" text-anchor="middle" class="rel">clasifica</text>
+  </g>
+  <text x="280" y="138" class="mult">1</text>
+  <text x="315" y="138" class="mult">*</text>
+
+  <g>
+    <rect x="640" y="160" width="70" height="18" fill="#FBF7F0"/>
+    <text x="675" y="173" text-anchor="middle" class="rel">ocurre en</text>
+  </g>
+  <text x="638" y="138" class="mult">0..1</text>
+  <text x="678" y="138" class="mult">*</text>
+
+  <g>
+    <rect x="448" y="336" width="46" height="18" fill="#FBF7F0"/>
+    <text x="471" y="349" text-anchor="middle" class="rel">tiene</text>
+  </g>
+  <text x="472" y="300" class="mult">1</text>
+  <text x="472" y="396" class="mult">*</text>
+
+  <g>
+    <rect x="1002" y="126" width="52" height="18" fill="#FBF7F0"/>
+    <text x="1028" y="139" text-anchor="middle" class="rel">marca</text>
+  </g>
+  <text x="1005" y="165" class="mult">1</text>
+  <text x="600" y="463" class="mult">*</text>
+
+  <g>
+    <rect x="1000" y="326" width="60" height="18" fill="#FBF7F0"/>
+    <text x="1030" y="339" text-anchor="middle" class="rel">registra</text>
+  </g>
+  <text x="1150" y="255" class="mult">1</text>
+  <text x="920" y="450" class="mult">*</text>
+
+  <g>
+    <rect x="578" y="336" width="70" height="18" fill="#FBF7F0"/>
+    <text x="613" y="349" text-anchor="middle" class="rel">visitado en</text>
+  </g>
+  <text x="605" y="300" class="mult">1</text>
+  <text x="705" y="396" class="mult">*</text>
+
+  <g>
+    <rect x="1200" y="246" width="80" height="18" fill="#FBF7F0"/>
+    <text x="1222" y="259" class="rel">preferencias</text>
+  </g>
+  <text x="1190" y="255" class="mult">1</text>
+  <text x="1190" y="305" class="mult">1</text>
+
+  <!-- ===== Leyenda ===== -->
+  <g font-size="12" fill="#5C6B6E">
+    <line x1="40" y1="700" x2="80" y2="700" stroke="#3F7D45" stroke-width="2"/>
+    <text x="90" y="704">Asociación</text>
+    <line x1="40" y1="726" x2="80" y2="726" stroke="#D96C3F" stroke-width="2"/>
+    <polygon points="40,726 50,718 40,710" fill="#D96C3F"/>
+    <text x="90" y="730">Composición (Usuario ◆ Preferencias)</text>
+    <text x="40" y="756" font-weight="700" fill="#8E5A4A">Favorito y Visita en color terracota: son clases de asociación entre Usuario y Lugar.</text>
+    <text x="40" y="778">1 / * / 0..1 indican la multiplicidad de cada extremo de la relación.</text>
+  </g>
+
+</svg>
+</body>
+</html>

@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  body{margin:0;background:#FBF7F0;}
+  text{font-family:'Segoe UI', system-ui, sans-serif;}
+  .uc{font-size:13px;font-weight:600;fill:#1F2A2E;}
+  .panel-t{font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;}
+</style>
+</head>
+<body>
+<svg width="1560" height="1000" viewBox="0 0 1560 1000" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="arrowGray" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="none" stroke="#8A9296" stroke-width="1.4"/></marker>
+  <marker id="arrowOrange" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#D96C3F"/></marker>
+</defs>
+
+<rect x="0" y="0" width="1560" height="1000" fill="#FBF7F0"/>
+
+<!-- system boundary -->
+<rect x="280" y="30" width="1240" height="940" rx="18" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="2"/>
+<text x="304" y="60" font-size="15" font-weight="800" fill="#0B6E8C">Sistema Mi Ciudad</text>
+
+<!-- actor lines (drawn first, under everything) -->
+<g stroke="#8A9296" stroke-width="1.4">
+  <line x1="150" y1="490" x2="440" y2="115"/>
+  <line x1="150" y1="490" x2="440" y2="185"/>
+  <line x1="150" y1="490" x2="440" y2="255"/>
+  <line x1="150" y1="490" x2="440" y2="325"/>
+
+  <line x1="150" y1="490" x2="745" y2="110"/>
+  <line x1="150" y1="490" x2="745" y2="180"/>
+  <line x1="150" y1="490" x2="745" y2="250"/>
+  <line x1="150" y1="490" x2="745" y2="320"/>
+  <line x1="150" y1="490" x2="745" y2="390"/>
+
+  <line x1="150" y1="490" x2="1045" y2="110"/>
+  <line x1="150" y1="490" x2="1045" y2="180"/>
+
+  <line x1="150" y1="490" x2="1350" y2="110"/>
+  <line x1="150" y1="490" x2="1350" y2="180"/>
+  <line x1="150" y1="490" x2="1350" y2="250"/>
+
+  <line x1="150" y1="490" x2="750" y2="530"/>
+  <line x1="150" y1="490" x2="1020" y2="530"/>
+  <line x1="150" y1="490" x2="750" y2="610"/>
+  <line x1="150" y1="490" x2="1020" y2="610"/>
+</g>
+
+<!-- Actor -->
+<g stroke="#1F2A2E" stroke-width="2.4" fill="none" stroke-linecap="round">
+  <circle cx="150" cy="440" r="17" fill="#FFFFFF"/>
+  <line x1="150" y1="457" x2="150" y2="520"/>
+  <line x1="120" y1="480" x2="180" y2="480"/>
+  <line x1="150" y1="520" x2="122" y2="565"/>
+  <line x1="150" y1="520" x2="178" y2="565"/>
+</g>
+<text x="150" y="592" text-anchor="middle" font-size="14" font-weight="800" fill="#1F2A2E">Turista</text>
+
+<!-- Panel A: Cuenta y perfil -->
+<rect x="310" y="60" width="260" height="310" rx="16" fill="#E9F3F6"/>
+<text x="326" y="82" class="panel-t" fill="#0B6E8C">Cuenta y perfil</text>
+<ellipse cx="440" cy="115" rx="112" ry="27" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+<text x="440" y="120" text-anchor="middle" class="uc">Registrarse</text>
+<ellipse cx="440" cy="185" rx="112" ry="27" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+<text x="440" y="190" text-anchor="middle" class="uc">Iniciar sesión</text>
+<ellipse cx="440" cy="255" rx="112" ry="27" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+<text x="440" y="260" text-anchor="middle" class="uc">Editar preferencias</text>
+<ellipse cx="440" cy="325" rx="112" ry="27" fill="#FFFFFF" stroke="#0B6E8C" stroke-width="1.6"/>
+<text x="440" y="330" text-anchor="middle" class="uc">Cerrar sesión</text>
+
+<!-- Panel B: Catálogo -->
+<rect x="600" y="60" width="290" height="390" rx="16" fill="#F1E7DE"/>
+<text x="616" y="82" class="panel-t" fill="#8E5A4A">Catálogo de lugares</text>
+<ellipse cx="745" cy="110" rx="122" ry="27" fill="#FFFFFF" stroke="#8E5A4A" stroke-width="1.6"/>
+<text x="745" y="115" text-anchor="middle" class="uc">Explorar catálogo</text>
+<ellipse cx="745" cy="180" rx="122" ry="27" fill="#FFFFFF" stroke="#8E5A4A" stroke-width="1.6"/>
+<text x="745" y="185" text-anchor="middle" class="uc">Buscar por nombre</text>
+<ellipse cx="745" cy="250" rx="122" ry="27" fill="#FFFFFF" stroke="#8E5A4A" stroke-width="1.6"/>
+<text x="745" y="255" text-anchor="middle" class="uc">Filtrar por categoría</text>
+<ellipse cx="745" cy="320" rx="122" ry="27" fill="#FFFFFF" stroke="#8E5A4A" stroke-width="1.6"/>
+<text x="745" y="325" text-anchor="middle" class="uc">Ver detalle de lugar</text>
+<ellipse cx="745" cy="390" rx="122" ry="27" fill="#FFFFFF" stroke="#8E5A4A" stroke-width="1.6"/>
+<text x="745" y="395" text-anchor="middle" class="uc">Escuchar audioguía</text>
+
+<!-- Panel C: Mapa -->
+<rect x="920" y="60" width="250" height="200" rx="16" fill="#EDF6EE"/>
+<text x="936" y="82" class="panel-t" fill="#3F7D45">Mapa y cercanía</text>
+<ellipse cx="1045" cy="110" rx="107" ry="27" fill="#FFFFFF" stroke="#3F7D45" stroke-width="1.6"/>
+<text x="1045" y="115" text-anchor="middle" class="uc">Ver mapa y cercanía</text>
+<ellipse cx="1045" cy="180" rx="107" ry="27" fill="#FFFFFF" stroke="#3F7D45" stroke-width="1.6"/>
+<text x="1045" y="185" text-anchor="middle" class="uc">Cómo llegar</text>
+
+<!-- Panel D: Agenda -->
+<rect x="1200" y="60" width="300" height="300" rx="16" fill="#FBEEE0"/>
+<text x="1216" y="82" class="panel-t" fill="#C9962C">Agenda de eventos</text>
+<ellipse cx="1350" cy="110" rx="128" ry="27" fill="#FFFFFF" stroke="#C9962C" stroke-width="1.6"/>
+<text x="1350" y="115" text-anchor="middle" class="uc">Ver agenda de eventos</text>
+<ellipse cx="1350" cy="180" rx="128" ry="27" fill="#FFFFFF" stroke="#C9962C" stroke-width="1.6"/>
+<text x="1350" y="185" text-anchor="middle" class="uc">Ver detalle de evento</text>
+<ellipse cx="1350" cy="250" rx="128" ry="27" fill="#FFFFFF" stroke="#C9962C" stroke-width="1.6"/>
+<text x="1350" y="253" text-anchor="middle" class="uc" font-size="12">Guardar evento con</text>
+<text x="1350" y="266" text-anchor="middle" class="uc" font-size="12">recordatorio</text>
+
+<!-- Panel E: Mi recorrido y favoritos -->
+<rect x="600" y="480" width="600" height="300" rx="16" fill="#FBEAE0"/>
+<text x="616" y="502" class="panel-t" fill="#D96C3F">Mi recorrido y favoritos</text>
+<ellipse cx="750" cy="530" rx="122" ry="27" fill="#FFFFFF" stroke="#D96C3F" stroke-width="1.6"/>
+<text x="750" y="535" text-anchor="middle" class="uc">Registrar visita</text>
+<ellipse cx="1020" cy="530" rx="122" ry="27" fill="#FFFFFF" stroke="#D96C3F" stroke-width="1.6"/>
+<text x="1020" y="535" text-anchor="middle" class="uc">Ver mi recorrido</text>
+<ellipse cx="750" cy="610" rx="122" ry="27" fill="#FFFFFF" stroke="#D96C3F" stroke-width="1.6"/>
+<text x="750" y="613" text-anchor="middle" class="uc" font-size="12">Marcar / desmarcar</text>
+<text x="750" y="626" text-anchor="middle" class="uc" font-size="12">favorito</text>
+<ellipse cx="1020" cy="610" rx="122" ry="27" fill="#FFFFFF" stroke="#D96C3F" stroke-width="1.6"/>
+<text x="1020" y="615" text-anchor="middle" class="uc">Ver favoritos</text>
+
+<!-- extend target ellipse -->
+<ellipse cx="1045" cy="880" rx="185" ry="36" fill="#FBF7F0" stroke="#3A4450" stroke-width="1.8" stroke-dasharray="5,4"/>
+<text x="1045" y="885" text-anchor="middle" font-size="13" font-weight="700" fill="#3A4450">Usar la aplicación sin conexión</text>
+
+<!-- lock badges (requiere sesion) -->
+<g fill="none" stroke="#0B6E8C" stroke-width="1.6">
+  <g transform="translate(536,242)"><rect x="0" y="4" width="14" height="11" rx="2" fill="#0B6E8C" stroke="none"/><path d="M2,4 V0.5 a5,5 0 0110,0 V4"/></g>
+  <g transform="translate(536,312)"><rect x="0" y="4" width="14" height="11" rx="2" fill="#0B6E8C" stroke="none"/><path d="M2,4 V0.5 a5,5 0 0110,0 V4"/></g>
+  <g transform="translate(1461,237)"><rect x="0" y="4" width="14" height="11" rx="2" fill="#0B6E8C" stroke="none"/><path d="M2,4 V0.5 a5,5 0 0110,0 V4"/></g>
+  <g transform="translate(1131,517)"><rect x="0" y="4" width="14" height="11" rx="2" fill="#0B6E8C" stroke="none"/><path d="M2,4 V0.5 a5,5 0 0110,0 V4"/></g>
+  <g transform="translate(861,597)"><rect x="0" y="4" width="14" height="11" rx="2" fill="#0B6E8C" stroke="none"/><path d="M2,4 V0.5 a5,5 0 0110,0 V4"/></g>
+  <g transform="translate(1131,597)"><rect x="0" y="4" width="14" height="11" rx="2" fill="#0B6E8C" stroke="none"/><path d="M2,4 V0.5 a5,5 0 0110,0 V4"/></g>
+</g>
+
+<!-- include / extend, drawn on top so both stay visible over the panels -->
+<path d="M750,530 L440,185" stroke="#D96C3F" stroke-width="2" stroke-dasharray="7,5" fill="none" marker-end="url(#arrowOrange)"/>
+<rect x="505" y="343" width="82" height="18" rx="4" fill="#FFFFFF" stroke="#D96C3F" stroke-width="1"/>
+<text x="546" y="356" font-size="12" font-weight="700" fill="#D96C3F" text-anchor="middle">«include»</text>
+
+<path d="M1045,846 C1045,650 900,300 780,140" stroke="#D96C3F" stroke-width="2" stroke-dasharray="7,5" fill="none" marker-end="url(#arrowOrange)"/>
+<rect x="895" y="551" width="80" height="18" rx="4" fill="#FFFFFF" stroke="#D96C3F" stroke-width="1"/>
+<text x="935" y="564" font-size="12" font-weight="700" fill="#D96C3F" text-anchor="middle">«extend»</text>
+
+<!-- legend -->
+<g font-size="12" fill="#5C6B6E">
+  <line x1="40" y1="700" x2="80" y2="700" stroke="#8A9296" stroke-width="1.4"/>
+  <text x="90" y="704">El turista accede directamente</text>
+  <line x1="40" y1="726" x2="80" y2="726" stroke="#D96C3F" stroke-width="2" stroke-dasharray="7,5"/>
+  <text x="90" y="730">«include» / «extend»</text>
+  <g transform="translate(40,742)" fill="none" stroke="#0B6E8C" stroke-width="1.6">
+    <rect x="0" y="4" width="14" height="11" rx="2" fill="#0B6E8C" stroke="none"/><path d="M2,4 V0.5 a5,5 0 0110,0 V4"/>
+  </g>
+  <text x="90" y="756">Requiere sesión iniciada</text>
+  <text x="40" y="784" font-weight="700" fill="#1F2A2E">Mi Ciudad tiene un único rol de usuario: el turista participa en todos los casos de uso.</text>
+</g>
+
+</svg>
+</body>
+</html>
