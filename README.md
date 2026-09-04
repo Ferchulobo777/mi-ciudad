@@ -31,7 +31,7 @@ Palmar, con muy poca señal).
 | Navegación | [Expo Router](https://docs.expo.dev/router/introduction/) (basada en archivos) |
 | Autenticación | `expo-secure-store` + `expo-local-authentication` (huella/rostro) |
 | Persistencia | `expo-sqlite` |
-| Mapas y ubicación | `react-native-maps` + `expo-location` |
+| Mapas y ubicación | Leaflet + OpenStreetMap (WebView) + `expo-location` |
 | Cámara y sensores | `expo-camera` (QR) · `expo-haptics` · `expo-network` |
 | Íconos | `@react-native-vector-icons/ionicons` |
 | Estilos | `StyleSheet` nativo de React Native |
@@ -39,16 +39,9 @@ Palmar, con muy poca señal).
 
 ## Cómo probarlo en tu celular (guía paso a paso, sin experiencia previa)
 
-Esta guía asume que nunca instalaste nada de Expo ni de React Native. Son cinco partes: instalar
-herramientas en la compu, bajar el proyecto, instalar el build de desarrollo en el celular, cargar
-la variable de entorno del mapa, y conectar las dos cosas.
-
-> **Por qué ya no alcanza con Expo Go**: la pantalla de Mapa usa `react-native-maps`, una librería
-> nativa que no viene incluida en la app genérica de Expo Go. A partir de acá cada persona necesita
-> instalarse una vez un **build de desarrollo** propio de Mi Ciudad (se genera en la nube con EAS,
-> gratis, sin tocar Android Studio ni Xcode) y usar esa app en vez de Expo Go. Es un paso más la
-> primera vez, pero después se sigue trabajando exactamente igual que con Expo Go (mismo
-> `npx expo start`, mismo QR).
+Esta guía asume que nunca instalaste nada de Expo ni de React Native. Son cuatro partes: instalar
+herramientas en la compu, bajar el proyecto, instalar una app en el celular, y conectar las dos
+cosas.
 
 ### 1. Herramientas que hacen falta en la computadora
 
@@ -61,11 +54,9 @@ la variable de entorno del mapa, y conectar las dos cosas.
   Tiene que mostrar un número tipo `v20.x.x` o más alto.
 - **Git**. Se instala desde [git-scm.com](https://git-scm.com/downloads). Sirve para bajar
   ("clonar") el proyecto.
-- Una **cuenta gratuita en [expo.dev](https://expo.dev/signup)**: hace falta para que EAS te
-  compile el build de desarrollo en la nube.
 
-No hace falta instalar Android Studio ni Xcode para esta guía: el build de desarrollo se compila
-en los servidores de Expo (EAS), no en tu computadora.
+No hace falta instalar Android Studio ni Xcode para esta guía: se prueba directo en el celular con
+la app Expo Go, sin compilar nada nativo.
 
 ### 2. Bajar el proyecto e instalar sus dependencias
 
@@ -80,42 +71,14 @@ npm install
 `npm install` puede tardar varios minutos la primera vez: está bajando todas las librerías que usa
 la app. Si al final ves algo como `added 850 packages`, salió bien.
 
-### 3. Cargar la API key del mapa
+### 3. Instalar Expo Go en el celular
 
-La pantalla de Mapa necesita una API key de Google Maps para mostrar el mapa en Android (en iPhone
-no hace falta, usa Apple Maps). Pedile a Fernando la key del proyecto y creá un archivo `.env` en
-la raíz del proyecto (al lado de `package.json`) con este contenido:
+- **Android**: buscá "Expo Go" en Google Play e instalala.
+- **iPhone**: buscá "Expo Go" en el App Store e instalala.
 
-```bash
-GOOGLE_MAPS_API_KEY_ANDROID=la-key-que-te-pasaron
-```
+Es gratis y no hace falta crear cuenta para lo que necesitamos acá.
 
-Hay un archivo `.env.example` en el proyecto con la plantilla. El archivo `.env` nunca se sube al
-repositorio (está en `.gitignore`) — cada persona tiene el suyo, local.
-
-### 4. Instalar el build de desarrollo en el celular (una sola vez)
-
-Con este paso instalás una versión de Mi Ciudad con soporte para el mapa nativo. Reemplaza a Expo
-Go — se hace una sola vez, no en cada sesión de trabajo.
-
-```bash
-npm install -g eas-cli
-eas login
-eas build --profile development --platform android
-```
-
-`eas login` te va a pedir el usuario y contraseña de la cuenta de expo.dev que creaste en el paso
-1. El build tarda entre 10 y 20 minutos (se hace en los servidores de Expo, podés dejarlo
-corriendo). Al terminar, la terminal te muestra un link para descargar un archivo `.apk` — abrilo
-desde el navegador del celular (o escaneá el QR que también te ofrece) e instalalo, permitiendo
-"orígenes desconocidos" si Android lo pide (es normal para un build de desarrollo, no viene de
-Google Play).
-
-> **iPhone**: el equivalente es `eas build --profile development --platform ios`, pero un build de
-> desarrollo para iOS necesita una cuenta paga de Apple Developer para poder instalarse fuera de la
-> App Store. Si no la tenés, probá en un Android mientras tanto.
-
-### 5. Levantar el servidor y conectar el celular
+### 4. Levantar el servidor y conectar el celular
 
 Importante: **la computadora y el celular tienen que estar conectados a la misma red Wi-Fi**. Si
 la compu está por cable y el celular por Wi-Fi, puede no funcionar — conectá la compu también por
@@ -124,32 +87,34 @@ Wi-Fi si podés.
 En la terminal, adentro de la carpeta del proyecto:
 
 ```bash
-npx expo start --dev-client
+npx expo start
 ```
 
-Después de unos segundos va a aparecer un código QR en la terminal. Abrí la app que instalaste en
-el paso anterior (se llama "Mi Ciudad", no Expo Go) y escaneá el QR desde ahí — la propia app tiene
-un botón de escanear al abrirla.
+Después de unos segundos va a aparecer un código QR en la terminal. Con el celular:
+
+- **Android**: abrí Expo Go y tocá el botón de escanear (o usá directamente la cámara del
+  celular, que en Android suele reconocer el QR y ofrecer abrirlo en Expo Go).
+- **iPhone**: abrí la app de **Cámara** (no Expo Go) y apuntá al QR — te va a aparecer un aviso
+  arriba para abrirlo en Expo Go.
+
+La primera vez que abre, la app tarda un par de minutos en compilarse (verás una barra de
+progreso). Las veces siguientes es mucho más rápido.
 
 Si el QR no te sirve (por ejemplo, estás probando el proyecto por SSH o en un entorno sin
 pantalla), fijate en la terminal una línea que dice `Metro waiting on exp://` seguida de una
-dirección como `exp://192.168.x.x:8081` — esa misma dirección se puede escribir a mano en la app,
+dirección como `exp://192.168.x.x:8081` — esa misma dirección se puede escribir a mano en Expo Go,
 tocando "Enter URL manually".
 
-Para las sesiones siguientes de trabajo alcanza con repetir este paso 5 (`npx expo start
---dev-client`): el build del celular no cambia salvo que se agregue otra librería nativa nueva —
-en ese caso hay que repetir el paso 4.
-
-### 6. Qué probar
+### 5. Qué probar
 
 Con la app abierta en el celular:
 
 - **Catálogo** (primera pestaña): buscador y filtro por categoría de los lugares turísticos.
 - Tocá un lugar → vas al **Detalle**: marcá el corazón de favorito (te va a pedir iniciar sesión
   la primera vez) y probá "Cómo llegar" (abre el mapa nativo del teléfono).
-- **Mapa**: los lugares aparecen como marcadores de colores (uno por categoría). Tocá uno para ver
-  su nombre y distancia, y "Ver detalle" para ir a esa pantalla. El botón redondo de abajo a la
-  derecha centra el mapa en tu ubicación actual.
+- **Mapa**: los lugares aparecen como marcadores de colores (uno por categoría, sobre un mapa de
+  OpenStreetMap). Tocá uno para ver su nombre y categoría, y "Ver detalle" para ir a esa pantalla.
+  El botón redondo de abajo a la derecha centra el mapa en tu ubicación actual.
 - **Agenda**: tocá un evento y "Guardar con recordatorio" — programa una notificación local.
 - **Ingresar**, con el usuario de prueba: `maria.villalba@correo.com` / `colon2026`. También podés
   crear una cuenta nueva desde "Crear cuenta".
@@ -166,23 +131,24 @@ registradas tienen que seguir ahí — es la parte de persistencia local que pid
 ### Problemas comunes
 
 - **"Port 8081 is being used by another process"**: quedó un servidor anterior corriendo. Cerrá
-  esa terminal (o el proceso `node` correspondiente) y volvé a correr `npx expo start --dev-client`.
+  esa terminal (o el proceso `node` correspondiente) y volvé a correr `npx expo start`.
 - **Pantalla roja al abrir, mencionando un archivo que "no se puede resolver"**: casi siempre es
   la caché de Metro, no un error real del código. Se soluciona así:
   ```bash
-  npx expo start --dev-client --clear
+  npx expo start --clear
   ```
   Si con eso no alcanza, cerrá el servidor y borrá también la carpeta `.expo` de este proyecto y
   la carpeta `node_modules` (después corré `npm install` de nuevo).
 - **El celular no logra conectarse**: confirmá que esté en la misma red Wi-Fi que la computadora
   (no datos móviles), y que el firewall de Windows no esté bloqueando Node.js — si aparece un
   aviso de "Windows Defender Firewall" al arrancar `expo start`, tocá "Permitir acceso".
-- **El mapa aparece en blanco (solo en Android)**: revisá que el archivo `.env` tenga la key
-  correcta y que el paso 4 (instalar el build de desarrollo) se haya hecho después de tener esa
-  key cargada — la key se compila adentro del `.apk`, así que si se agrega o cambia hay que volver
-  a correr `eas build`.
-- **"command not found: eas"**: el paso 4 no terminó de instalar `eas-cli` globalmente. Probá de
-  nuevo `npm install -g eas-cli` y, si seguís en Windows, abrí una terminal nueva después.
+- **El mapa aparece en blanco o no carga**: la pantalla de Mapa necesita conexión a internet para
+  bajar los tiles de OpenStreetMap (no funciona sin conexión, igual que cualquier app de mapas
+  online) — confirmá que el celular tenga datos o Wi-Fi.
+
+El proyecto se prueba con [Expo Go](https://expo.dev/go) durante todo el desarrollo. Recién
+migraría a un development build si en algún momento hiciera falta una librería nativa fuera del
+SDK de Expo (por ahora no hace falta).
 
 ## Estructura del proyecto
 

@@ -30,8 +30,7 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files (la API key de Google Maps vive acá, nunca en app.config.js en texto plano)
-.env
+# local env files
 .env*.local
 
 # typescript
