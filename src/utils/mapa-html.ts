@@ -18,10 +18,14 @@ interface DatosMapa {
   lugarDestacadoId?: string;
 }
 
-// Tiles oscuros de CartoDB (gratuitos, sin key) para que el mapa respete el
-// tema de la app en vez de quedar siempre claro sobre una pantalla oscura.
-const TILES_CLARO = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
-const TILES_OSCURO = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
+// Un solo proveedor de tiles (OpenStreetMap estándar) en los dos temas: se
+// había probado un servidor de tiles oscuros de CartoDB para el modo oscuro,
+// pero CartoDB pasó a exigir autenticación en su capa gratuita y el mapa
+// terminaba mostrando un cartel de "API key required" en vez del mapa. En
+// vez de sumar un segundo proveedor externo (con el mismo riesgo de que deje
+// de ser gratuito), el modo oscuro se logra con un filtro CSS sobre las
+// mismas tiles de siempre.
+const TILES_OSM = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 
 export function construirHtmlMapa({
   lugares,
@@ -48,6 +52,7 @@ export function construirHtmlMapa({
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <style>
     html, body, #mapa { height: 100%; margin: 0; padding: 0; }
+    ${esOscuro ? ".leaflet-tile-pane { filter: invert(1) hue-rotate(180deg) brightness(0.9) contrast(0.9); }" : ""}
     .pin { border-radius: 50% 50% 50% 0; border: 2px solid white; width: 22px; height: 22px; transform: rotate(-45deg); box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
     .pin-usuario { border-radius: 50%; border: 3px solid white; width: 16px; height: 16px; background: #0B6E8C; box-shadow: 0 0 0 4px rgba(11,110,140,0.3); }
     .leaflet-popup-content { font-family: -apple-system, Roboto, sans-serif; }
@@ -66,7 +71,7 @@ export function construirHtmlMapa({
     const lugarDestacadoId = ${lugarDestacadoId ? JSON.stringify(lugarDestacadoId) : "null"};
 
     const mapa = L.map("mapa", { zoomControl: false, attributionControl: true });
-    L.tileLayer(${JSON.stringify(esOscuro ? TILES_OSCURO : TILES_CLARO)}, {
+    L.tileLayer(${JSON.stringify(TILES_OSM)}, {
       maxZoom: 19,
       attribution: "&copy; OpenStreetMap",
     }).addTo(mapa);
