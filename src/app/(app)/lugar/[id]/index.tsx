@@ -121,6 +121,11 @@ export default function DetalleLugar() {
             onPress={() => abrirComoLlegar(lugar.coordenadas.latitud, lugar.coordenadas.longitud, lugar.nombre)}
           />
           <Boton
+            etiqueta="Ver en el mapa"
+            variante="secundario"
+            onPress={() => router.push({ pathname: "/mapa", params: { lugarId: lugar.id } })}
+          />
+          <Boton
             etiqueta="Registrar visita"
             variante="texto"
             onPress={() =>

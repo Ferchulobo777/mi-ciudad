@@ -29,9 +29,18 @@ export function ReproductorAudioguia({ audioguia }: Props) {
   const estado = useAudioPlayerStatus(reproductor);
 
   // Si el turista sale de la pantalla de detalle con el audio sonando, no
-  // tiene sentido que siga de fondo: se pausa al desmontar.
+  // tiene sentido que siga de fondo: se pausa al desmontar. expo-audio libera
+  // el objeto nativo del reproductor por su cuenta al desmontar el componente,
+  // así que puede que ya no exista para cuando corre este cleanup: se ignora
+  // ese caso en vez de dejar que reviente la pantalla.
   useEffect(() => {
-    return () => reproductor.pause();
+    return () => {
+      try {
+        reproductor.pause();
+      } catch {
+        // El reproductor ya fue liberado, no hay nada que pausar.
+      }
+    };
   }, [reproductor]);
 
   function alternarReproduccion() {

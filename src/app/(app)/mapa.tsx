@@ -1,14 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { WebView } from "react-native-webview";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import type { Categoria, Lugar } from "@/tipos";
 import { useTema } from "@/hooks/use-tema";
 import { useSesion } from "@/hooks/use-sesion";
-import { listarCategorias, listarLugares } from "@/servicios/lugares";
+import { listarCategorias, listarLugares, formatearDistancia } from "@/servicios/lugares";
 import { obtenerPosicionActual, type Posicion } from "@/servicios/ubicacion";
+import { calcularRuta, type RutaCalculada } from "@/servicios/ruteo";
 import { construirHtmlMapa } from "@/utils/mapa-html";
 
 interface MensajeDelMapa {
@@ -17,6 +18,7 @@ interface MensajeDelMapa {
 }
 
 export default function Mapa() {
+  const { lugarId } = useLocalSearchParams<{ lugarId?: string }>();
   const tema = useTema();
   const esquemaDelSistema = useColorScheme();
   const { temaPreferencia } = useSesion();
@@ -27,6 +29,9 @@ export default function Mapa() {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [posicion, setPosicion] = useState<Posicion | null>(null);
   const [cargando, setCargando] = useState(true);
+  // `undefined` = todavía no se calculó (o está en curso), `null` = se
+  // calculó pero no hay ruta disponible, objeto = ruta calculada.
+  const [ruta, setRuta] = useState<RutaCalculada | null | undefined>(undefined);
 
   useEffect(() => {
     Promise.all([listarLugares(), listarCategorias(), obtenerPosicionActual()]).then(
@@ -40,6 +45,28 @@ export default function Mapa() {
   }, []);
 
   const categoriaPorId = useMemo(() => new Map(categorias.map((c) => [c.id, c])), [categorias]);
+  const lugarDestacado = useMemo(() => lugares.find((l) => l.id === lugarId), [lugares, lugarId]);
+
+  // La ruta se calcula recién cuando ya tenemos la posición real del turista
+  // y el lugar de destino: OSRM necesita las dos coordenadas. Si el turista
+  // no dio permiso de ubicación, el mapa igual muestra el lugar destacado,
+  // solo que sin la línea de ruta.
+  useEffect(() => {
+    if (!lugarDestacado || !posicion) return;
+    let cancelado = false;
+    calcularRuta(posicion, lugarDestacado.coordenadas).then((resultado) => {
+      if (cancelado) return;
+      setRuta(resultado);
+      if (resultado) {
+        webviewRef.current?.postMessage(JSON.stringify({ tipo: "ruta", puntos: resultado.puntos }));
+      }
+    });
+    return () => {
+      cancelado = true;
+    };
+  }, [lugarDestacado, posicion]);
+
+  const calculandoRuta = lugarDestacado !== undefined && posicion !== null && ruta === undefined;
 
   // El HTML se genera una sola vez con los datos iniciales: actualizar la
   // posición del turista después no debería recargar todo el mapa (se pierde
@@ -53,8 +80,9 @@ export default function Mapa() {
         posicion,
         colorPrimario: tema.primario,
         esOscuro,
+        lugarDestacadoId: lugarId,
       }),
-    [lugares, categoriaPorId, esOscuro], // eslint-disable-line react-hooks/exhaustive-deps
+    [lugares, categoriaPorId, esOscuro, lugarId], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
   function manejarMensaje(evento: { nativeEvent: { data: string } }) {
@@ -89,7 +117,25 @@ export default function Mapa() {
       )}
 
       <SafeAreaView style={styles.capaSuperior} pointerEvents="box-none" edges={["top"]}>
-        <Text style={[styles.titulo, { color: tema.textoPrincipal, backgroundColor: tema.superficie }]}>Mapa</Text>
+        <Text style={[styles.titulo, { color: tema.textoPrincipal, backgroundColor: tema.superficie }]}>
+          {lugarDestacado ? lugarDestacado.nombre : "Mapa"}
+        </Text>
+        {lugarDestacado && (calculandoRuta || ruta) && (
+          <View style={[styles.infoRuta, { backgroundColor: tema.superficie }]}>
+            {calculandoRuta ? (
+              <ActivityIndicator size="small" color={tema.primario} />
+            ) : (
+              ruta && (
+                <>
+                  <Ionicons name="walk-outline" size={16} color={tema.primario} />
+                  <Text style={[styles.textoRuta, { color: tema.textoPrincipal }]}>
+                    {formatearDistancia(ruta.distanciaMetros)} · {formatearDuracion(ruta.duracionSegundos)}
+                  </Text>
+                </>
+              )
+            )}
+          </View>
+        )}
       </SafeAreaView>
 
       <Pressable
@@ -102,6 +148,14 @@ export default function Mapa() {
       </Pressable>
     </View>
   );
+}
+
+function formatearDuracion(segundos: number): string {
+  const minutos = Math.round(segundos / 60);
+  if (minutos < 60) return `${minutos} min`;
+  const horas = Math.floor(minutos / 60);
+  const minutosRestantes = minutos % 60;
+  return `${horas} h ${minutosRestantes} min`;
 }
 
 const styles = StyleSheet.create({
@@ -119,6 +173,18 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     overflow: "hidden",
   },
+  infoRuta: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginTop: 8,
+    marginHorizontal: 20,
+    alignSelf: "flex-start",
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 12,
+  },
+  textoRuta: { fontSize: 13, fontWeight: "700" },
   botonUbicacion: {
     position: "absolute",
     right: 20,

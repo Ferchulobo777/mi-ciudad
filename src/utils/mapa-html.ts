@@ -12,6 +12,10 @@ interface DatosMapa {
   posicion: Posicion | null;
   colorPrimario: string;
   esOscuro: boolean;
+  /** Si viene de "Ver en el mapa" desde un lugar puntual, el encuadre inicial
+   * se ajusta a ese lugar + la posición del turista, en vez de a todos los
+   * lugares del catálogo. */
+  lugarDestacadoId?: string;
 }
 
 // Tiles oscuros de CartoDB (gratuitos, sin key) para que el mapa respete el
@@ -19,7 +23,14 @@ interface DatosMapa {
 const TILES_CLARO = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
 const TILES_OSCURO = "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png";
 
-export function construirHtmlMapa({ lugares, categoriaPorId, posicion, colorPrimario, esOscuro }: DatosMapa): string {
+export function construirHtmlMapa({
+  lugares,
+  categoriaPorId,
+  posicion,
+  colorPrimario,
+  esOscuro,
+  lugarDestacadoId,
+}: DatosMapa): string {
   const marcadores = lugares.map((lugar) => ({
     id: lugar.id,
     nombre: lugar.nombre,
@@ -43,6 +54,7 @@ export function construirHtmlMapa({ lugares, categoriaPorId, posicion, colorPrim
     .popup-titulo { font-weight: 800; font-size: 14px; margin-bottom: 2px; }
     .popup-subtitulo { font-size: 12px; color: #5C6B6E; margin-bottom: 6px; }
     .popup-accion { font-size: 12px; font-weight: 700; color: ${colorPrimario}; }
+    .linea-ruta { filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3)); }
   </style>
 </head>
 <body>
@@ -51,6 +63,7 @@ export function construirHtmlMapa({ lugares, categoriaPorId, posicion, colorPrim
   <script>
     const marcadores = ${JSON.stringify(marcadores)};
     const posicionInicial = ${posicion ? JSON.stringify(posicion) : "null"};
+    const lugarDestacadoId = ${lugarDestacadoId ? JSON.stringify(lugarDestacadoId) : "null"};
 
     const mapa = L.map("mapa", { zoomControl: false, attributionControl: true });
     L.tileLayer(${JSON.stringify(esOscuro ? TILES_OSCURO : TILES_CLARO)}, {
@@ -104,7 +117,15 @@ export function construirHtmlMapa({ lugares, categoriaPorId, posicion, colorPrim
     if (posicionInicial) {
       marcadorUsuario = L.marker([posicionInicial.latitud, posicionInicial.longitud], { icon: iconoUsuario }).addTo(mapa);
     }
-    if (marcadores.length > 0) {
+
+    const lugarDestacado = lugarDestacadoId ? marcadores.find((m) => m.id === lugarDestacadoId) : null;
+    if (lugarDestacado && posicionInicial) {
+      // Viene de "Ver en el mapa" desde un lugar puntual: el encuadre se
+      // ajusta a ese lugar y a la posición del turista, no a todo el catálogo.
+      mapa.fitBounds(
+        L.latLngBounds([lugarDestacado.lat, lugarDestacado.lon], [posicionInicial.latitud, posicionInicial.longitud]).pad(0.25),
+      );
+    } else if (marcadores.length > 0) {
       const limites = posicionInicial
         ? grupo.getBounds().extend([posicionInicial.latitud, posicionInicial.longitud])
         : grupo.getBounds();
@@ -113,6 +134,14 @@ export function construirHtmlMapa({ lugares, categoriaPorId, posicion, colorPrim
       mapa.setView([posicionInicial.latitud, posicionInicial.longitud], 14);
     } else {
       mapa.setView([-32.2246, -58.1489], 14);
+    }
+
+    let lineaRuta = null;
+    function trazarRuta(puntos) {
+      if (lineaRuta) mapa.removeLayer(lineaRuta);
+      const latlngs = puntos.map((p) => [p.latitud, p.longitud]);
+      lineaRuta = L.polyline(latlngs, { color: ${JSON.stringify(colorPrimario)}, weight: 5, opacity: 0.85, className: "linea-ruta" }).addTo(mapa);
+      mapa.fitBounds(lineaRuta.getBounds().pad(0.15));
     }
 
     function enviarMensaje(datos) {
@@ -128,6 +157,8 @@ export function construirHtmlMapa({ lugares, categoriaPorId, posicion, colorPrim
         const datos = JSON.parse(evento.data);
         if (datos.tipo === "centrar" && typeof datos.lat === "number") {
           centrarEnPosicion(datos.lat, datos.lon);
+        } else if (datos.tipo === "ruta" && Array.isArray(datos.puntos)) {
+          trazarRuta(datos.puntos);
         }
       } catch {
         // Se ignoran mensajes que no sean JSON válido.
