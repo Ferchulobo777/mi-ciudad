@@ -45,7 +45,7 @@ export default function Registro() {
       await guardarUltimoEmail(email);
       await sesion.iniciar(token, usuario);
       // Vuelve a donde estaba el turista cuando le pidieron la cuenta (la
-      // pestaña Yo, o el lugar que quería guardar), ahora con sesión.
+      // pestaña Mi perfil, o el lugar que quería guardar), ahora con sesión.
       router.back();
     } catch (error) {
       setErrorGeneral(

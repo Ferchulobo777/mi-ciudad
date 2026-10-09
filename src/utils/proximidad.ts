@@ -15,6 +15,16 @@ export interface RegistroDeAvisos {
 // convertirse en doce notificaciones seguidas.
 export const MINUTOS_ENTRE_AVISOS = 10;
 
+/**
+ * Lugares de los que corresponde avisar: los favoritos del turista y los de
+ * sus categorías favoritas, como define la especificación funcional (el
+ * aviso de proximidad es para lo que al turista le interesa, no para todo el
+ * catálogo). Si no marcó nada, la lista queda vacía y no hay avisos.
+ */
+export function lugaresDeInteres(lugares: Lugar[], idsFavoritos: string[], categoriasFavoritas: string[]): Lugar[] {
+  return lugares.filter((lugar) => idsFavoritos.includes(lugar.id) || categoriasFavoritas.includes(lugar.categoriaId));
+}
+
 export function claveDelDia(fecha: Date): string {
   const mes = String(fecha.getMonth() + 1).padStart(2, "0");
   const dia = String(fecha.getDate()).padStart(2, "0");

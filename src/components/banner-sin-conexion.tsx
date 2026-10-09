@@ -1,16 +1,12 @@
 import { StyleSheet, Text, View } from "react-native";
-import { useNetworkState } from "expo-network";
+import { useHayConexion } from "@/hooks/use-conexion";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 
-// useNetworkState ya es reactivo: no hace falta un useEffect propio para
-// escuchar cambios de conectividad, el hook se vuelve a renderizar solo.
+// useNetworkState (adentro de useHayConexion) ya es reactivo: no hace falta
+// un useEffect propio para escuchar cambios de conectividad.
 export function BannerSinConexion() {
-  const red = useNetworkState();
-
-  // Mientras el estado inicial todavía no se resolvió (undefined) no se
-  // muestra nada, para no prender el aviso en falso apenas abre la app.
-  if (red.isConnected === undefined) return null;
-  if (red.isConnected && red.isInternetReachable !== false) return null;
+  const hayConexion = useHayConexion();
+  if (hayConexion !== false) return null;
 
   return (
     <View style={styles.banner}>

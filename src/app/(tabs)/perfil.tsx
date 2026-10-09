@@ -18,6 +18,7 @@ import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import { useSesion } from "@/hooks/use-sesion";
 import { useTema } from "@/hooks/use-tema";
+import { useCategorias } from "@/hooks/use-categorias";
 import { FormularioLogin } from "@/components/formulario-login";
 import { elegirFotoDeGaleria, sacarFotoDePerfil } from "@/servicios/foto-perfil";
 import { listarFavoritos } from "@/servicios/favoritos";
@@ -34,9 +35,20 @@ const OPCIONES_TEMA: { valor: PreferenciaTema; etiqueta: string }[] = [
 // Los tres radios que define el contrato de datos para Preferencias.
 const RADIOS: RadioAviso[] = [100, 250, 500];
 
-export default function Yo() {
+export default function MiPerfil() {
   const tema = useTema();
-  const { usuario, cerrar, temaPreferencia, cambiarTema, proximidad, cambiarProximidad, actualizarAvatar } = useSesion();
+  const {
+    usuario,
+    cerrar,
+    temaPreferencia,
+    cambiarTema,
+    proximidad,
+    cambiarProximidad,
+    categoriasFavoritas,
+    cambiarCategoriasFavoritas,
+    actualizarAvatar,
+  } = useSesion();
+  const { categorias } = useCategorias();
   const [cambiandoFoto, setCambiandoFoto] = useState(false);
   const [cantidadFavoritos, setCantidadFavoritos] = useState<number | null>(null);
 
@@ -73,6 +85,14 @@ export default function Yo() {
     const uri = await obtener(usuario.id);
     if (uri) actualizarAvatar(uri);
     setCambiandoFoto(false);
+  }
+
+  function alternarCategoria(categoriaId: string) {
+    cambiarCategoriasFavoritas(
+      categoriasFavoritas.includes(categoriaId)
+        ? categoriasFavoritas.filter((id) => id !== categoriaId)
+        : [...categoriasFavoritas, categoriaId],
+    );
   }
 
   // El aviso necesita dos permisos, y se piden recién acá, cuando el turista
@@ -160,6 +180,23 @@ export default function Yo() {
           <View style={[styles.separador, { backgroundColor: tema.borde }]} />
 
           <View style={styles.fila}>
+            <Ionicons name="pricetags-outline" size={20} color={tema.primario} />
+            <Text style={[styles.filaTexto, { color: tema.textoPrincipal }]}>Categorías favoritas</Text>
+          </View>
+          <View style={[styles.filaChips, styles.chipsQueBajan]}>
+            {categorias.map((categoria) => (
+              <Chip
+                key={categoria.id}
+                etiqueta={categoria.nombre}
+                activo={categoriasFavoritas.includes(categoria.id)}
+                onPress={() => alternarCategoria(categoria.id)}
+              />
+            ))}
+          </View>
+
+          <View style={[styles.separador, { backgroundColor: tema.borde }]} />
+
+          <View style={styles.fila}>
             <Ionicons name="navigate-circle-outline" size={20} color={tema.primario} />
             <Text style={[styles.filaTexto, { color: tema.textoPrincipal }]}>Aviso de proximidad</Text>
             <Switch
@@ -172,8 +209,8 @@ export default function Yo() {
           {proximidad.activo && (
             <>
               <Text style={[styles.ayuda, { color: tema.textoSecundario }]}>
-                Te avisamos cuando pases cerca de un lugar, una sola vez por lugar y por día, mientras la app esté
-                abierta.
+                Te avisamos cuando pases cerca de uno de tus lugares favoritos o de un lugar de tus categorías
+                favoritas, una sola vez por lugar y por día, mientras la app esté abierta.
               </Text>
               <View style={styles.filaChips}>
                 {RADIOS.map((radio) => (
@@ -255,6 +292,7 @@ const styles = StyleSheet.create({
   ayuda: { fontSize: 13, lineHeight: 19, marginBottom: 10 },
   separador: { height: 1 },
   filaChips: { flexDirection: "row", gap: 8, paddingBottom: 12 },
+  chipsQueBajan: { flexWrap: "wrap" },
   chip: { minHeight: 40, paddingHorizontal: 16, borderRadius: 100, justifyContent: "center" },
   textoChip: { fontSize: 14, fontWeight: "700" },
 });

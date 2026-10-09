@@ -45,7 +45,7 @@ function claveProximidad(usuarioId: string): string {
 
 // Arranca apagado aunque el usuario simulado lo tenga en true: prenderlo
 // implica pedir dos permisos (ubicación y notificaciones), y eso tiene que
-// pasar por un gesto del turista en el Perfil, no de manera implícita.
+// pasar por un gesto del turista en Mi perfil, no de manera implícita.
 export function leerPreferenciaProximidad(usuarioId: string): PreferenciaProximidad {
   const valor = Storage.getItemSync(claveProximidad(usuarioId));
   if (!valor) return { activo: false, radioMetros: 250 };
@@ -59,6 +59,25 @@ export function leerPreferenciaProximidad(usuarioId: string): PreferenciaProximi
 
 export function guardarPreferenciaProximidad(usuarioId: string, preferencia: PreferenciaProximidad): void {
   Storage.setItemSync(claveProximidad(usuarioId), JSON.stringify(preferencia));
+}
+
+function claveCategoriasFavoritas(usuarioId: string): string {
+  return `categorias-favoritas:${usuarioId}`;
+}
+
+export function leerCategoriasFavoritas(usuarioId: string): string[] {
+  const valor = Storage.getItemSync(claveCategoriasFavoritas(usuarioId));
+  if (!valor) return [];
+  try {
+    const guardado: unknown = JSON.parse(valor);
+    return Array.isArray(guardado) ? guardado.filter((id): id is string => typeof id === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+export function guardarCategoriasFavoritas(usuarioId: string, categorias: string[]): void {
+  Storage.setItemSync(claveCategoriasFavoritas(usuarioId), JSON.stringify(categorias));
 }
 
 const CLAVE_REGISTRO_AVISOS = "proximidad:registro";

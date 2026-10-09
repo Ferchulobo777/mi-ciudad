@@ -4,7 +4,8 @@ import { useTema } from "@/hooks/use-tema";
 import { useAvisoDeProximidad } from "@/hooks/use-aviso-proximidad";
 import { useSincronizacionAlVolverLaConexion } from "@/hooks/use-sincronizacion";
 
-// Cuatro pestañas, las mismas del boceto del PRD y de los mockups: el mapa es
+// Cuatro pestañas, las mismas del boceto del PRD y de los mockups (la última,
+// "Mi perfil", en vez del "Yo" del boceto, más claro como etiqueta): el mapa es
 // la pantalla de inicio y el catálogo completo se abre desde su buscador.
 export default function LayoutPestanas() {
   const tema = useTema();
@@ -46,9 +47,9 @@ export default function LayoutPestanas() {
         }}
       />
       <Tabs.Screen
-        name="yo"
+        name="perfil"
         options={{
-          title: "Yo",
+          title: "Mi perfil",
           tabBarIcon: ({ color, size }) => <Ionicons name="person-outline" size={size} color={color} />,
         }}
       />

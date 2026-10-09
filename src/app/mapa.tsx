@@ -9,6 +9,7 @@ import { useTema } from "@/hooks/use-tema";
 import { useSesion } from "@/hooks/use-sesion";
 import { useCategorias } from "@/hooks/use-categorias";
 import { useUbicacion } from "@/hooks/use-ubicacion";
+import { useHayConexion } from "@/hooks/use-conexion";
 import { ChipsCategorias } from "@/components/chips-categorias";
 import { EstadoError } from "@/components/estado-error";
 import { listarLugares } from "@/servicios/lugares";
@@ -37,6 +38,7 @@ export default function Mapa() {
   const esOscuro = temaPreferencia === "oscuro" || (temaPreferencia === "sistema" && esquemaDelSistema === "dark");
   const { categorias, porId: categoriaPorId } = useCategorias();
   const ubicacion = useUbicacion();
+  const sinConexion = useHayConexion() === false;
   const webviewRef = useRef<WebView>(null);
 
   const [lugares, setLugares] = useState<Lugar[]>([]);
@@ -130,7 +132,7 @@ export default function Mapa() {
 
   return (
     <View style={[styles.contenedor, { backgroundColor: tema.fondo }]}>
-      {!cargando && !error && (
+      {!cargando && !error && !sinConexion && (
         <WebView
           ref={webviewRef}
           originWhitelist={["*"]}
@@ -140,6 +142,24 @@ export default function Mapa() {
         />
       )}
       {cargando && <ActivityIndicator style={styles.centro} color={tema.primario} />}
+      {/* Sin señal no se pueden bajar Leaflet ni las tiles: en vez de un mapa en
+          blanco se ofrece la lista de lugares, que sale de la copia guardada. */}
+      {!cargando && !error && sinConexion && (
+        <View style={[styles.centro, styles.sinConexion]}>
+          <Ionicons name="cloud-offline-outline" size={40} color={tema.textoSecundario} />
+          <Text style={[styles.textoSinConexion, { color: tema.textoSecundario }]}>
+            El mapa necesita conexión a internet. Mientras tanto podés ver la lista de lugares, que está guardada en
+            tu teléfono.
+          </Text>
+          <Pressable
+            onPress={() => router.replace("/catalogo")}
+            accessibilityRole="button"
+            style={[styles.botonLista, { backgroundColor: tema.primario }]}
+          >
+            <Text style={styles.textoBotonLista}>Ver la lista de lugares</Text>
+          </Pressable>
+        </View>
+      )}
       {error && (
         <View style={styles.centro}>
           <EstadoError
@@ -215,6 +235,10 @@ const styles = StyleSheet.create({
   contenedor: { flex: 1 },
   webview: { flex: 1 },
   centro: { flex: 1, justifyContent: "center" },
+  sinConexion: { alignItems: "center", gap: 14, paddingHorizontal: 32 },
+  textoSinConexion: { fontSize: 16, textAlign: "center", lineHeight: 23 },
+  botonLista: { minHeight: 52, borderRadius: 14, paddingHorizontal: 20, justifyContent: "center" },
+  textoBotonLista: { color: "#FFFFFF", fontSize: 15, fontWeight: "700" },
   capaSuperior: { position: "absolute", top: 0, left: 0, right: 0 },
   filaSuperior: { flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 16, paddingTop: 8 },
   botonRedondo: { width: 48, height: 48, borderRadius: 24, alignItems: "center", justifyContent: "center", ...sombra },

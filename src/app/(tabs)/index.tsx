@@ -10,6 +10,7 @@ import { useSesion } from "@/hooks/use-sesion";
 import { useCategorias } from "@/hooks/use-categorias";
 import { useUbicacion } from "@/hooks/use-ubicacion";
 import { useVisitasPendientes } from "@/hooks/use-sincronizacion";
+import { useHayConexion } from "@/hooks/use-conexion";
 import { BannerSinConexion } from "@/components/banner-sin-conexion";
 import { AvisoUbicacion } from "@/components/aviso-ubicacion";
 import { TarjetaLugar } from "@/components/tarjeta-lugar";
@@ -33,6 +34,7 @@ export default function Inicio() {
   const { porId: categoriaPorId } = useCategorias();
   const ubicacion = useUbicacion();
   const pendientes = useVisitasPendientes();
+  const sinConexion = useHayConexion() === false;
 
   const [lugares, setLugares] = useState<Lugar[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -113,28 +115,42 @@ export default function Inicio() {
           alPedir={ubicacion.pedir}
         />
 
-        <Pressable
-          onPress={() => router.push("/mapa")}
-          accessibilityRole="button"
-          accessibilityLabel="Abrir el mapa completo de lugares"
-          style={[styles.tarjetaMapa, { backgroundColor: tema.superficie }]}
-        >
-          {!cargando && !error && (
-            // pointerEvents none: la vista previa no recibe toques, así el
-            // gesto de la pantalla no compite con el del mapa y cualquier
-            // toque abre el mapa completo.
-            <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-              <WebView originWhitelist={["*"]} source={{ html: htmlMapa }} style={styles.webview} />
-            </View>
-          )}
-          <View style={[styles.etiquetaMapa, { backgroundColor: tema.superficie }]}>
-            <Ionicons name="expand-outline" size={16} color={tema.primario} />
-            <Text style={[styles.textoEtiquetaMapa, { color: tema.primario }]}>Ver mapa completo</Text>
+        {/* Leaflet y las tiles de OpenStreetMap se descargan de internet: sin
+            señal el mapa no se puede dibujar. En vez de una tarjeta en blanco
+            se explica por qué, y la lista de abajo sigue funcionando con la
+            copia guardada (como en el mockup del estado sin conexión). */}
+        {sinConexion ? (
+          <View style={[styles.mapaSinConexion, { backgroundColor: tema.superficie, borderColor: tema.borde }]}>
+            <Ionicons name="map-outline" size={28} color={tema.textoSecundario} />
+            <Text style={[styles.textoSinConexion, { color: tema.textoSecundario }]}>
+              El mapa necesita conexión. Los lugares de abajo están guardados en tu teléfono.
+            </Text>
           </View>
-        </Pressable>
+        ) : (
+          <Pressable
+            onPress={() => router.push("/mapa")}
+            accessibilityRole="button"
+            accessibilityLabel="Abrir el mapa completo de lugares"
+            style={[styles.tarjetaMapa, { backgroundColor: tema.superficie }]}
+          >
+            {!cargando && !error && (
+              // pointerEvents none: la vista previa no recibe toques, así el
+              // gesto de la pantalla no compite con el del mapa y cualquier
+              // toque abre el mapa completo.
+              <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+                <WebView originWhitelist={["*"]} source={{ html: htmlMapa }} style={styles.webview} />
+              </View>
+            )}
+            <View style={[styles.etiquetaMapa, { backgroundColor: tema.superficie }]}>
+              <Ionicons name="expand-outline" size={16} color={tema.primario} />
+              <Text style={[styles.textoEtiquetaMapa, { color: tema.primario }]}>Ver mapa completo</Text>
+            </View>
+          </Pressable>
+        )}
 
         <Text style={[styles.subtitulo, { color: tema.textoPrincipal }]} accessibilityRole="header">
           {ubicacion.posicion ? "Cerca tuyo" : "Cerca del centro"}
+          {sinConexion ? " (guardado)" : ""}
         </Text>
 
         {cargando && <ActivityIndicator style={{ marginTop: 20 }} color={tema.primario} />}
@@ -175,6 +191,8 @@ const styles = StyleSheet.create({
   botonBuscar: { width: 52, height: 52, borderRadius: 16, alignItems: "center", justifyContent: "center", elevation: 2, shadowColor: "#000", shadowOpacity: 0.08, shadowRadius: 6, shadowOffset: { width: 0, height: 2 } },
   pendientes: { flexDirection: "row", alignItems: "center", gap: 8, marginHorizontal: 20, marginBottom: 14, padding: 12, borderRadius: 12 },
   textoPendientes: { fontSize: 14, fontWeight: "700", flex: 1 },
+  mapaSinConexion: { marginHorizontal: 20, borderRadius: 24, borderWidth: 1, padding: 24, alignItems: "center", gap: 10 },
+  textoSinConexion: { fontSize: 15, textAlign: "center", lineHeight: 22 },
   tarjetaMapa: { height: 260, marginHorizontal: 20, borderRadius: 24, overflow: "hidden" },
   webview: { flex: 1, backgroundColor: "transparent" },
   etiquetaMapa: { position: "absolute", right: 12, bottom: 12, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100 },

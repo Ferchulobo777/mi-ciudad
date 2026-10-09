@@ -111,14 +111,15 @@ tocando "Enter URL manually".
 ### 5. Qué probar
 
 La app tiene cuatro pestañas, igual que los mockups del documento de diseño: **Mapa** (inicio),
-**Agenda**, **Mi recorrido** y **Yo**. El catálogo completo se abre con la lupa del inicio.
+**Agenda**, **Mi recorrido** y **Mi perfil**. El catálogo completo se abre con la lupa del inicio.
 
 - **Mapa (inicio)**: tocá "Usar mi ubicación" en la tarjeta azul para ver "Cerca tuyo" ordenado
   por distancia (si no das permiso, se calcula desde el centro de Colón y la app sigue andando).
   Tocá la vista previa del mapa para abrir el **mapa completo**: marcadores por categoría, filtro
   con los chips de arriba, y el botón de abajo a la derecha para centrarte.
 - **Lupa → Catálogo**: buscador (sin importar tildes: "colon" encuentra "Termas de Colón"),
-  filtro por categoría y orden por distancia o por nombre.
+  filtro por categoría, orden por distancia o por nombre, y el corazón de cada tarjeta para marcar
+  un favorito sin entrar al detalle.
 - Tocá un lugar → **Detalle**: estado del horario ("Abierto ahora · cierra 22:00", o cuándo
   abre), distancia, horarios de la semana, teléfono y precio. Marcá el corazón de favorito (te va
   a pedir iniciar sesión la primera vez). Si el lugar está a más de 200 m aparece la **flecha**
@@ -135,13 +136,16 @@ La app tiene cuatro pestañas, igual que los mockups del documento de diseño: *
   tienen el formato `COLON:<id del lugar>`, por ejemplo `COLON:lugar-molino-forclaz`: se puede
   generar uno con cualquier generador de QR para probarlo. Un QR que no es de Mi Ciudad muestra un
   aviso y la cámara sigue escaneando.
-- **Yo** (con sesión iniciada): tema claro/oscuro/sistema, foto de perfil (cámara o galería, con
-  recorte nativo), "Mis favoritos" y **Aviso de proximidad** (al prenderlo pide ubicación y
-  notificaciones; avisa una sola vez por lugar y por día, mientras la app está abierta).
+- **Mi perfil** (con sesión iniciada): foto de perfil (cámara o galería, con recorte nativo), "Mis
+  favoritos", **Categorías favoritas**, **Aviso de proximidad** y tema claro/oscuro/sistema. El aviso
+  de proximidad pide ubicación y notificaciones al prenderlo, y avisa de tus lugares favoritos y de
+  los lugares de tus categorías favoritas: una sola vez por lugar y por día, mientras la app está
+  abierta.
 
 **Sin conexión (el caso de El Palmar)**: abrí la app una vez con señal, poné el teléfono en modo
 avión y volvé a abrirla. Aparece "Sin conexión · mostrando datos guardados" y el catálogo y la
-agenda se ven igual (salen de la copia guardada en SQLite). Registrá una visita: queda como
+agenda se ven igual (salen de la copia guardada en SQLite); el mapa, que necesita internet, se
+  reemplaza por un aviso. Registrá una visita: queda como
 "pendiente de subir" y en el inicio aparece "1 visita esperando para sincronizar". Al sacar el
 modo avión se sube sola y el ícono pasa a una tilde verde.
 

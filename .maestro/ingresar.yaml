@@ -1,7 +1,7 @@
 appId: com.miciudad.app
 ---
 - launchApp
-- tapOn: "Yo"
+- tapOn: "Mi perfil"
 - tapOn:
     id: "campo-email"
 - inputText: "turista.mi.ciudad@correo.com"

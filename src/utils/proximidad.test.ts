@@ -3,6 +3,7 @@ import {
   MINUTOS_ENTRE_AVISOS,
   claveDelDia,
   elegirLugarParaAvisar,
+  lugaresDeInteres,
   registrarAviso,
   registroVacio,
 } from "@/utils/proximidad";
@@ -71,6 +72,29 @@ describe("elegirLugarParaAvisar", () => {
     const antes = new Date(ahora.getTime() - (MINUTOS_ENTRE_AVISOS + 1) * 60 * 1000);
     const registro = registrarAviso(registroVacio(antes), "otro-lugar", antes);
     expect(elegirLugarParaAvisar([aCien], turista, 250, registro, ahora)?.id).toBe("a-cien-metros");
+  });
+});
+
+describe("lugaresDeInteres", () => {
+  const termas = { ...lugar("termas", -32.2, -58.14), categoriaId: "cat-termas" };
+  const molino = { ...lugar("molino", -32.2, -58.14), categoriaId: "cat-museos" };
+  const playa = { ...lugar("playa", -32.2, -58.14), categoriaId: "cat-playas" };
+
+  it("incluye los lugares marcados como favoritos", () => {
+    expect(lugaresDeInteres([termas, molino, playa], ["molino"], []).map((l) => l.id)).toEqual(["molino"]);
+  });
+
+  it("incluye los lugares de las categorías favoritas", () => {
+    expect(lugaresDeInteres([termas, molino, playa], [], ["cat-playas"]).map((l) => l.id)).toEqual(["playa"]);
+  });
+
+  it("suma las dos cosas sin repetir lugares", () => {
+    const resultado = lugaresDeInteres([termas, molino, playa], ["termas"], ["cat-termas", "cat-museos"]);
+    expect(resultado.map((l) => l.id)).toEqual(["termas", "molino"]);
+  });
+
+  it("si el turista no marcó nada, no hay de qué avisar", () => {
+    expect(lugaresDeInteres([termas, molino, playa], [], [])).toEqual([]);
   });
 });
 

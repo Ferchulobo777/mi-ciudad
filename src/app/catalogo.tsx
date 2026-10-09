@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import type { Lugar } from "@/tipos";
 import { useTema } from "@/hooks/use-tema";
+import { useSesion } from "@/hooks/use-sesion";
 import { useCategorias } from "@/hooks/use-categorias";
 import { useUbicacion } from "@/hooks/use-ubicacion";
 import { TarjetaLugar } from "@/components/tarjeta-lugar";
@@ -13,6 +14,8 @@ import { ChipsCategorias } from "@/components/chips-categorias";
 import { EstadoError } from "@/components/estado-error";
 import { BannerSinConexion } from "@/components/banner-sin-conexion";
 import { listarLugares } from "@/servicios/lugares";
+import { alternarFavorito, listarFavoritos } from "@/servicios/favoritos";
+import { vibrarSeleccion } from "@/servicios/hapticos";
 import { distanciaEnMetros, ordenarPorDistancia } from "@/utils/geo";
 import type { Posicion } from "@/servicios/ubicacion";
 
@@ -22,6 +25,7 @@ type Orden = "distancia" | "nombre";
 
 export default function Catalogo() {
   const tema = useTema();
+  const { usuario } = useSesion();
   const { categorias, porId: categoriaPorId } = useCategorias();
   const ubicacion = useUbicacion();
   const [lugares, setLugares] = useState<Lugar[]>([]);
@@ -30,6 +34,7 @@ export default function Catalogo() {
   const [orden, setOrden] = useState<Orden>("distancia");
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState(false);
+  const [idsFavoritos, setIdsFavoritos] = useState<Set<string>>(new Set());
 
   const cargar = useCallback(() => {
     listarLugares({ categoriaId: categoriaSeleccionada, busqueda })
@@ -42,6 +47,36 @@ export default function Catalogo() {
   }, [categoriaSeleccionada, busqueda]);
 
   useEffect(cargar, [cargar]);
+
+  // Al volver del detalle, el corazón tiene que reflejar si el turista marcó
+  // o desmarcó el lugar ahí: por eso useFocusEffect y no un useEffect.
+  useFocusEffect(
+    useCallback(() => {
+      if (!usuario) {
+        setIdsFavoritos(new Set());
+        return;
+      }
+      listarFavoritos(usuario.id)
+        .then((favoritos) => setIdsFavoritos(new Set(favoritos.map((f) => f.lugarId))))
+        .catch(() => {});
+    }, [usuario]),
+  );
+
+  async function tocarFavorito(lugarId: string) {
+    // Mirar el catálogo no pide cuenta; guardar un favorito sí (PRD).
+    if (!usuario) {
+      router.push("/login");
+      return;
+    }
+    vibrarSeleccion();
+    const ahoraEsFavorito = await alternarFavorito(usuario.id, lugarId);
+    setIdsFavoritos((anteriores) => {
+      const nuevos = new Set(anteriores);
+      if (ahoraEsFavorito) nuevos.add(lugarId);
+      else nuevos.delete(lugarId);
+      return nuevos;
+    });
+  }
 
   // El estado de carga se prende en el evento que dispara el filtro, no
   // dentro del efecto: React recomienda no llamar a setState de forma
@@ -101,6 +136,8 @@ export default function Catalogo() {
             categoria={categoriaPorId.get(item.categoriaId)}
             distanciaEnMetros={distanciaEnMetros(desde, item.coordenadas)}
             onPress={() => router.push({ pathname: "/lugar/[id]", params: { id: item.id } })}
+            esFavorito={idsFavoritos.has(item.id)}
+            alTocarFavorito={() => tocarFavorito(item.id)}
           />
         )}
       />

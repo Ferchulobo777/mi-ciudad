@@ -9,6 +9,8 @@ import {
   guardarAvatar,
   leerPreferenciaProximidad,
   guardarPreferenciaProximidad,
+  leerCategoriasFavoritas,
+  guardarCategoriasFavoritas,
   type PreferenciaTema,
   type PreferenciaProximidad,
 } from "@/servicios/preferencias";
@@ -22,10 +24,13 @@ interface EstadoSesion {
   usuario: Usuario | null;
   temaPreferencia: PreferenciaTema;
   proximidad: PreferenciaProximidad;
+  /** Ids de las categorías que le interesan al turista (RF04): definen de qué lugares avisa la proximidad. */
+  categoriasFavoritas: string[];
   iniciar: (token: string, usuario: Usuario) => Promise<void>;
   cerrar: () => Promise<void>;
   cambiarTema: (tema: PreferenciaTema) => void;
   cambiarProximidad: (preferencia: PreferenciaProximidad) => void;
+  cambiarCategoriasFavoritas: (categorias: string[]) => void;
   actualizarAvatar: (uri: string) => void;
 }
 
@@ -37,6 +42,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const [usuario, setUsuario] = useState<Usuario | null>(null);
   const [temaPreferencia, setTemaPreferencia] = useState<PreferenciaTema>("sistema");
   const [proximidad, setProximidad] = useState<PreferenciaProximidad>(PROXIMIDAD_APAGADA);
+  const [categoriasFavoritas, setCategoriasFavoritas] = useState<string[]>([]);
 
   useEffect(() => {
     // Se busca un token de una sesión anterior antes de decidir a qué grupo de
@@ -61,6 +67,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
         setUsuario(avatarGuardado ? { ...usuarioRecuperado, avatarUrl: avatarGuardado } : usuarioRecuperado);
         setTemaPreferencia(leerTema(usuarioRecuperado.id));
         setProximidad(leerPreferenciaProximidad(usuarioRecuperado.id));
+        setCategoriasFavoritas(leerCategoriasFavoritas(usuarioRecuperado.id));
       } else {
         await borrarToken();
       }
@@ -75,6 +82,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     setUsuario(avatarGuardado ? { ...nuevoUsuario, avatarUrl: avatarGuardado } : nuevoUsuario);
     setTemaPreferencia(leerTema(nuevoUsuario.id));
     setProximidad(leerPreferenciaProximidad(nuevoUsuario.id));
+    setCategoriasFavoritas(leerCategoriasFavoritas(nuevoUsuario.id));
   };
 
   const cerrar = async () => {
@@ -83,6 +91,7 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     setUsuario(null);
     setTemaPreferencia("sistema");
     setProximidad(PROXIMIDAD_APAGADA);
+    setCategoriasFavoritas([]);
   };
 
   const cambiarTema = useCallback(
@@ -97,6 +106,14 @@ export function SesionProvider({ children }: { children: ReactNode }) {
     (preferencia: PreferenciaProximidad) => {
       setProximidad(preferencia);
       if (usuario) guardarPreferenciaProximidad(usuario.id, preferencia);
+    },
+    [usuario],
+  );
+
+  const cambiarCategoriasFavoritas = useCallback(
+    (categorias: string[]) => {
+      setCategoriasFavoritas(categorias);
+      if (usuario) guardarCategoriasFavoritas(usuario.id, categorias);
     },
     [usuario],
   );
@@ -117,13 +134,26 @@ export function SesionProvider({ children }: { children: ReactNode }) {
       usuario,
       temaPreferencia,
       proximidad,
+      categoriasFavoritas,
       iniciar,
       cerrar,
       cambiarTema,
       cambiarProximidad,
+      cambiarCategoriasFavoritas,
       actualizarAvatar,
     }),
-    [estaListo, token, usuario, temaPreferencia, proximidad, cambiarTema, cambiarProximidad, actualizarAvatar],
+    [
+      estaListo,
+      token,
+      usuario,
+      temaPreferencia,
+      proximidad,
+      categoriasFavoritas,
+      cambiarTema,
+      cambiarProximidad,
+      cambiarCategoriasFavoritas,
+      actualizarAvatar,
+    ],
   );
 
   return <ContextoSesion.Provider value={valor}>{children}</ContextoSesion.Provider>;

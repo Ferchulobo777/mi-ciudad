@@ -16,7 +16,7 @@ const intro = [
   h1("1. Introducción"),
   p("Este documento reúne la documentación técnica oficial del trabajo integrador de Desarrollo para Móviles: la consigna completa fijada por la cátedra, la especificación funcional del proyecto elegido, el contrato de datos que va a usar la aplicación mientras la API de la cátedra no esté disponible, y el diseño de interfaz."),
   p("El análisis comparativo de las cinco propuestas recibidas y la justificación de la elección del proyecto se desarrollan por separado, en el documento Propuestas de Desarrollo. Este documento parte de esa elección y la documenta en detalle."),
-  callout("El proyecto que se documenta a continuación, Mi Ciudad, guía turística de Colón, es la propuesta recomendada en el documento Propuestas de Desarrollo. Queda sujeto a la confirmación final del equipo completo. Las secciones de diseño de interfaz y arquitectura se completan a medida que el equipo construye las primeras pantallas de la aplicación."),
+  callout("El proyecto que se documenta a continuación, Mi Ciudad, guía turística de Colón, es la propuesta recomendada en el documento Propuestas de Desarrollo y fue confirmada por el equipo completo el 3 de septiembre de 2026. La aplicación ya está construida: las secciones de diseño de interfaz, arquitectura y estado de avance describen su versión actual."),
 ];
 
 const consigna = [
@@ -89,15 +89,29 @@ const especificación = [
     [
       ["Cámara", "expo-camera", "Foto de la visita y lectura del código QR del cartel de cada lugar"],
       ["Galería", "expo-image-picker", "Elegir una foto ya sacada en vez de sacar una nueva"],
-      ["Ubicación y mapa", "expo-location, react-native-maps", "Mapa de lugares, cálculo de distancia, botón de cómo llegar"],
-      ["Notificaciones", "expo-notifications", "Aviso de proximidad a un lugar favorito y recordatorio de un evento guardado"],
-      ["Persistencia y red", "expo-sqlite, expo-sqlite kv-store, expo-network", "Catálogo cacheado para uso sin conexión, cola de visitas sin sincronizar, preferencias"],
+      ["Ubicación y mapa", "expo-location, react-native-webview con Leaflet y OpenStreetMap", "Mapa de lugares con filtro por categoría, cálculo de distancia, ruta caminando y botón de cómo llegar"],
+      ["Notificaciones", "expo-notifications", "Aviso de proximidad a un lugar favorito o de una categoría favorita, recordatorio de un evento guardado y aviso de evento suspendido"],
+      ["Persistencia y red", "expo-sqlite, expo-sqlite kv-store, expo-network", "Catálogo y agenda cacheados para uso sin conexión y cola de visitas sin sincronizar con expo-sqlite; preferencias del usuario con kv-store; aviso del estado de la red"],
       ["Seguridad", "expo-secure-store, expo-local-authentication", "Token de sesión guardado y reingreso con huella o rostro"],
       ["Sensores y háptica", "expo-sensors, expo-haptics", "Flecha de dirección hacia un lugar con el magnetómetro, vibración al registrar una visita"],
       ["Sistema de archivos", "expo-file-system", "Guardado de audioguías y fotos en el dispositivo para uso sin señal"],
-      ["Multimedia", "expo-audio, expo-video", "Reproducción de audioguías, incluso con la pantalla apagada"],
+      ["Multimedia", "expo-audio", "Reproducción de audioguías con controles a la vista, incluso con la pantalla apagada"],
     ],
     [2000, 2800, 4200],
+  ),
+  spacer(),
+  p("Decisión sobre el mapa. La consigna nombra react-native-maps. En Expo Go esa librería funciona sin configuración, pero la build de release que se entrega necesita una clave propia de Google Maps, y para obtenerla Google exige una cuenta de facturación que no aceptó el medio de pago disponible del equipo. Sin esa clave el mapa del APK queda en blanco. Por eso el mapa se resolvió con Leaflet y las tiles libres de OpenStreetMap dentro de un WebView (react-native-webview, incluido en el SDK de Expo): no requiere clave, se ve igual en Expo Go y en el APK, y cumple las mismas funciones, con marcadores por categoría, posición del turista, filtro y ruta. La decisión se consulta con la cátedra antes de la entrega."),
+  h2("Alcance de esta versión"),
+  p("Algunos puntos de la especificación dependen de recursos que todavía no están disponibles. La aplicación los resuelve de la siguiente manera hasta que lleguen."),
+  table(
+    [cell("Punto", { header: true, width: 2600 }), cell("Situación en esta versión", { header: true, width: 6400 })],
+    [
+      ["Fotos de los lugares", "El cliente todavía no envió fotos. La ficha muestra una imagen con el color y el icono de la categoría; cuando lleguen las fotos se cargan en el campo correspondiente sin cambiar las pantallas."],
+      ["Datos de la API", "La capa de servicios trabaja con datos simulados que respetan la forma de respuesta de la API. Sin conexión, los pedidos fallan como fallaría la red real, y la aplicación muestra la última copia guardada."],
+      ["Favoritos y recorrido entre teléfonos", "Se guardan en el teléfono con expo-sqlite. Conservarlos al cambiar de teléfono requiere la API de la cátedra; la cola de visitas sin sincronizar ya está preparada para subirlas."],
+      ["Aviso de proximidad", "Funciona mientras la aplicación está abierta. Avisar con la aplicación cerrada exigiría el permiso de ubicación permanente, que no se pide para este caso."],
+    ],
+    [2600, 6400],
   ),
 ];
 
@@ -119,9 +133,9 @@ const diseño = [
   h2("Colores funcionales"),
   swatchTable([
     ["Primario, Azul Río", "Acciones principales, encabezados, elementos de marca", "0B6E8C"],
-    ["Primario oscuro, Azul Río Profundo", "Variante para modo oscuro y estados de presión", "084C63"],
+    ["Primario oscuro, Azul Río Profundo", "Color de referencia de la marca. En la aplicación el modo oscuro mantiene el Azul Río, porque esta variante pierde contraste sobre el fondo oscuro", "084C63"],
     ["Secundario, Verde Palmar", "Elementos de naturaleza, éxito de segundo orden", "3F7D45"],
-    ["Acento, Terracota Atardecer", "Botón principal de cada pantalla, promociones, lo que tenés cerca", "D96C3F"],
+    ["Acento, Terracota Atardecer", "Favoritos y detalles que tienen que resaltar sin competir con los botones principales, que usan el Azul Río", "D96C3F"],
     ["Éxito, Verde Confirmación", "Visita registrada, favorito guardado, acción confirmada", "3F8F5B"],
     ["Advertencia, Amarillo Aviso", "Evento suspendido, información que puede cambiar", "C9962C"],
     ["Error, Rojo Ladrillo", "Sin conexión, error de red, formulario inválido", "C24C4C"],
@@ -156,23 +170,51 @@ const diseño = [
   spacer(),
   p("Los siete colores se eligieron con saturación y luminosidad parejas entre sí, para que ninguna categoría se vea más importante que otra en el mapa o en los filtros, y con suficiente distancia de tono entre pares para que se puedan distinguir incluso con dificultades de percepción de color comunes."),
   h2("Capturas de pantalla"),
-  callout("Pendiente. Esta sección se completa con capturas reales de las pantallas de la aplicación en cuanto el equipo tenga el primer recorrido navegable construido con Expo Router: inicio con mapa, listado de lugares, detalle de un lugar, y mi recorrido."),
+  p("Las pantallas de la aplicación siguen las trece pantallas del documento Diseño Técnico y Pantallas, que se actualizó con los cambios hechos durante el desarrollo: la pestaña Mi perfil, las categorías favoritas y la opción de marcar un favorito desde el catálogo."),
+  callout("Pendiente. Las capturas del APK de entrega se agregan a esta sección cuando esté generado el build de release."),
 ];
 
 const arquitectura = [
   h1("7. Arquitectura del sistema"),
-  p("La aplicación se organiza en tres capas, siguiendo el criterio que fija el propio PRD del cliente para poder reemplazar los datos simulados por la API real sin reescribir pantallas."),
+  p("La aplicación se organiza en capas, siguiendo el criterio que fija el propio PRD del cliente para poder reemplazar los datos simulados por la API real sin reescribir pantallas. Cada capa solo conoce a la que tiene debajo."),
   table(
     [cell("Capa", { header: true, width: 2200 }), cell("Responsabilidad", { header: true, width: 6800 })],
     [
-      ["Tipos", "Interfaces de TypeScript de cada entidad, en src tipos, escritas una sola vez a partir del contrato de datos"],
-      ["Datos simulados", "Datos de ejemplo tipados contra esas interfaces, en src mocks, incluyendo los casos límite"],
-      ["Servicios", "Funciones asincrónicas en src servicios que hoy devuelven el dato simulado y más adelante hacen la llamada real a la API. Es la única capa que cambia cuando la API esté disponible"],
+      ["Pantallas", "Archivos de src app. Expo Router arma las rutas a partir de la carpeta, sin registrar nada a mano"],
+      ["Componentes", "Piezas reutilizables en src components: botón, tarjeta de lugar, encabezado, reproductor de audioguía, flecha hacia el lugar, avisos de estado"],
+      ["Hooks", "Lógica compartida en src hooks: sesión, tema, ubicación con sus permisos, conexión, aviso de proximidad y sincronización de visitas"],
+      ["Servicios", "Funciones asincrónicas en src servicios: datos de la API, base de datos local, copia sin conexión, notificaciones, archivos, audio y vibración. Es la única capa que cambia cuando la API esté disponible"],
+      ["Utilidades", "Funciones puras en src utils, cubiertas por pruebas de unidad: distancias y rumbos, horarios, precios, fechas, códigos QR y reglas del aviso de proximidad"],
+      ["Tipos y datos simulados", "Interfaces de TypeScript en src tipos, escritas una sola vez a partir del contrato de datos, y datos de ejemplo tipados en src mocks"],
     ],
     [2200, 6800],
   ),
   spacer(),
-  callout("Pendiente. El diagrama de arquitectura completo, con la navegación de pantallas y el flujo de datos entre capas, se agrega a esta sección cuando el equipo confirme el reparto de pantallas por integrante."),
+  h2("Navegación"),
+  p("El primer nivel es una pila de pantallas (Stack). Adentro de ella están las cuatro pestañas, que son la base de la aplicación, y encima se apilan las pantallas de detalle, sin barra de pestañas y con el botón de volver a la pantalla anterior."),
+  table(
+    [cell("Nivel", { header: true, width: 2600 }), cell("Pantallas", { header: true, width: 6400 })],
+    [
+      ["Pestañas", "Mapa (inicio), Agenda, Mi recorrido y Mi perfil"],
+      ["Pantallas apiladas", "Catálogo, mapa completo, detalle de lugar, detalle de evento y favoritos"],
+      ["Modales", "Ingreso, registro, y registrar visita como hoja que sube desde abajo"],
+    ],
+    [2600, 6400],
+  ),
+  spacer(),
+  h2("Flujo de datos sin conexión"),
+  p("Cada pantalla pide los datos a un servicio. El servicio consulta la API y guarda la respuesta en una tabla de expo-sqlite; si la consulta falla por falta de conexión, devuelve la última copia guardada, y si tampoco hay copia, la pantalla muestra el error con la opción de reintentar. Las visitas se guardan primero en el teléfono con el estado sin sincronizar, y cuando expo-network informa que volvió la conexión se suben solas."),
+  h2("Reparto por integrante"),
+  table(
+    [cell("Integrante", { header: true, width: 2800 }), cell("Área a cargo", { header: true, width: 6200 })],
+    [
+      ["Fernando Rodriguez", "Presentación del proyecto, repositorio, pruebas y entrega del build"],
+      ["Natalia Ailén Gonzalez", "Diseño de interfaz: pantallas, paleta y temas, navegación, componentes, accesibilidad e identidad de la aplicación"],
+      ["Ballejo Micaela Celeste", "Cuenta y seguridad, registro de visitas con cámara, código QR y archivos, vibración y notificaciones"],
+      ["Fernando Ruben Bareiro Ruiz", "Capa de servicios y datos, persistencia y funcionamiento sin conexión, ubicación, mapa y magnetómetro"],
+    ],
+    [2800, 6200],
+  ),
 ];
 
 const estado = [
@@ -180,12 +222,14 @@ const estado = [
   table(
     [cell("Punto", { header: true, width: 5000 }), cell("Estado", { header: true, width: 4000 })],
     [
-      ["Propuesta recomendada", "Mi Ciudad, guía turística de Colón"],
-      ["Confirmación de la propuesta por el equipo", "Pendiente"],
+      ["Propuesta elegida", "Mi Ciudad, guía turística de Colón"],
+      ["Confirmación de la propuesta por el equipo", "Confirmada el 3 de septiembre de 2026"],
       ["Integrantes del equipo", "Equipo completo: Fernando Ruben Bareiro Ruiz, Natalia Ailén Gonzalez, Ballejo Micaela Celeste y Fernando Rodriguez"],
-      ["Repositorio Git del proyecto", "Pendiente de creación"],
-      ["Contrato de datos con la API", "Borrador preliminar en openapi.yaml"],
-      ["Primeras pantallas construidas", "Pendiente"],
+      ["Repositorio Git del proyecto", "github.com/Ferchulobo777/mi-ciudad"],
+      ["Contrato de datos con la API", "Borrador en openapi.yaml, usado con datos simulados hasta que la cátedra publique su API"],
+      ["Aplicación", "Trece pantallas construidas y los diez requisitos mínimos implementados"],
+      ["Pruebas", "104 pruebas de unidad con Jest y dos flujos de prueba de punta a punta con Maestro"],
+      ["Build de release (APK)", "Pendiente de generar con el perfil preview de EAS"],
       ["Fecha de entrega", "A confirmar según el Campus Virtual"],
       ["Fecha de defensa oral", "A confirmar según la cátedra"],
     ],

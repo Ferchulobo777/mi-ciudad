@@ -81,7 +81,7 @@ export default function MiRecorrido() {
         <Text style={[styles.textoVacio, { color: tema.textoSecundario }]}>
           Ingresá con tu cuenta para llevar el registro de los lugares que visitás, con fotos y notas.
         </Text>
-        <Boton etiqueta="Ingresar" onPress={() => router.navigate("/yo")} />
+        <Boton etiqueta="Ingresar" onPress={() => router.navigate("/perfil")} />
       </SafeAreaView>
     );
   }

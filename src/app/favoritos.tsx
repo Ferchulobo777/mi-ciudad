@@ -10,7 +10,7 @@ import { useCategorias } from "@/hooks/use-categorias";
 import { useUbicacion } from "@/hooks/use-ubicacion";
 import { TarjetaLugar } from "@/components/tarjeta-lugar";
 import { Encabezado } from "@/components/encabezado";
-import { listarFavoritos } from "@/servicios/favoritos";
+import { alternarFavorito, listarFavoritos } from "@/servicios/favoritos";
 import { obtenerLugaresPorIds } from "@/servicios/lugares";
 import { distanciaEnMetros } from "@/utils/geo";
 
@@ -39,6 +39,12 @@ export default function Favoritos() {
     }, [usuario]),
   );
 
+  async function quitarFavorito(lugarId: string) {
+    if (!usuario) return;
+    await alternarFavorito(usuario.id, lugarId);
+    setLugares((anteriores) => anteriores.filter((l) => l.id !== lugarId));
+  }
+
   return (
     <SafeAreaView style={[styles.contenedor, { backgroundColor: tema.fondo }]} edges={["top"]}>
       <Encabezado titulo="Favoritos" />
@@ -54,7 +60,7 @@ export default function Favoritos() {
             <View style={styles.vacio}>
               <Ionicons name="heart-outline" size={44} color={tema.textoSecundario} />
               <Text style={[styles.textoVacio, { color: tema.textoSecundario }]}>
-                Todavía no tenés lugares favoritos. Marcalos con el corazón desde el detalle de un lugar.
+                Todavía no tenés lugares favoritos. Marcalos con el corazón desde el catálogo o desde el detalle de un lugar.
               </Text>
             </View>
           }
@@ -64,6 +70,8 @@ export default function Favoritos() {
               categoria={categoriaPorId.get(item.categoriaId)}
               distanciaEnMetros={posicion ? distanciaEnMetros(posicion, item.coordenadas) : null}
               onPress={() => router.push({ pathname: "/lugar/[id]", params: { id: item.id } })}
+              esFavorito
+              alTocarFavorito={() => quitarFavorito(item.id)}
             />
           )}
         />

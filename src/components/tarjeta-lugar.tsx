@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Ionicons } from "@react-native-vector-icons/ionicons";
 import type { Categoria, Lugar } from "@/tipos";
 import { useTema } from "@/hooks/use-tema";
 import { ImagenLugar } from "@/components/imagen-lugar";
@@ -13,9 +14,12 @@ interface Props {
   categoria: Categoria | undefined;
   distanciaEnMetros: number | null;
   onPress: () => void;
+  /** Si se pasa, la tarjeta muestra el corazón para marcar o desmarcar el favorito sin entrar al detalle. */
+  esFavorito?: boolean;
+  alTocarFavorito?: () => void;
 }
 
-export function TarjetaLugar({ lugar, categoria, distanciaEnMetros, onPress }: Props) {
+export function TarjetaLugar({ lugar, categoria, distanciaEnMetros, onPress, esFavorito, alTocarFavorito }: Props) {
   const tema = useTema();
   const horario = describirHorario(lugar);
   const cerrado = horario.estado === "cerrado";
@@ -56,6 +60,17 @@ export function TarjetaLugar({ lugar, categoria, distanciaEnMetros, onPress }: P
         </Text>
       </View>
       {distancia && <Text style={[styles.distancia, { color: tema.primario }]}>{distancia}</Text>}
+      {alTocarFavorito && (
+        <Pressable
+          onPress={alTocarFavorito}
+          accessibilityRole="button"
+          accessibilityLabel={esFavorito ? `Quitar ${lugar.nombre} de favoritos` : `Agregar ${lugar.nombre} a favoritos`}
+          hitSlop={8}
+          style={styles.corazon}
+        >
+          <Ionicons name={esFavorito ? "heart" : "heart-outline"} size={22} color={esFavorito ? tema.acento : tema.textoSecundario} />
+        </Pressable>
+      )}
     </Pressable>
   );
 }
@@ -67,4 +82,5 @@ const styles = StyleSheet.create({
   nombre: { fontSize: 16, fontWeight: "700" },
   subtitulo: { fontSize: 14, marginTop: 2 },
   distancia: { fontSize: 14, fontWeight: "800" },
+  corazon: { width: 44, height: 44, alignItems: "center", justifyContent: "center", marginRight: -6 },
 });

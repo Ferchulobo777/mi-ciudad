@@ -17,11 +17,11 @@ interface Props {
    * para que la pantalla se vuelva a renderizar como usuario ingresado). */
   onExito?: () => void;
   /** true cuando el formulario se muestra en la pantalla modal de Login (y no
-   * embebido en la pestaña Yo): ofrece "Seguir sin cuenta" para cerrarla. */
+   * embebido en la pestaña Mi perfil): ofrece "Seguir sin cuenta" para cerrarla. */
   esModal?: boolean;
 }
 
-// Formulario compartido entre la pantalla de Login y la tab Yo: se mostraba
+// Formulario compartido entre la pantalla de Login y la pestaña Mi perfil: se mostraba
 // en dos lugares con la misma lógica duplicada, y una pantalla intermedia de
 // "todavía no ingresaste" antes de llegar acá que no sumaba nada.
 export function FormularioLogin({ onExito, esModal = false }: Props) {

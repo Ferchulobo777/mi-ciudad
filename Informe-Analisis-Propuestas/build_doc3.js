@@ -99,7 +99,7 @@ const requisitosNoFuncionales = [
     [cell("ID", { header: true, width: 900, center: true }), cell("Requisito no funcional", { header: true, width: 8100 })],
     [
       ["RNF01", "Disponibilidad sin conexión: el catálogo, las fichas de lugares y las audioguías ya descargadas tienen que estar disponibles sin conexión a internet."],
-      ["RNF02", "Persistencia local: el catálogo se cachea con expo-sqlite, y las visitas sin sincronizar se guardan en una cola local con expo-sqlite kv-store."],
+      ["RNF02", "Persistencia local: el catálogo, la agenda, los favoritos y la cola de visitas sin sincronizar se guardan con expo-sqlite; las preferencias del usuario, como el tema o las categorías favoritas, con expo-sqlite kv-store."],
       ["RNF03", "Seguridad: el token de sesión se guarda con expo-secure-store, nunca en almacenamiento sin cifrar."],
       ["RNF04", "Usabilidad: contraste fuerte y letra grande, pensados para uso al sol y con una sola mano."],
       ["RNF05", "Accesibilidad visual: la aplicación respeta el modo oscuro del sistema operativo."],
