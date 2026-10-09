@@ -1,4 +1,4 @@
-import type { RespuestaSesion } from "@/tipos";
+import type { RespuestaSesion, Usuario } from "@/tipos";
 import { usuariosSimulados } from "@/mocks/usuarios";
 
 // Códigos alineados con la convención de error de la cátedra: { error: { codigo, mensaje } }.
@@ -50,6 +50,16 @@ export async function reingresarConBiometria(email: string): Promise<RespuestaSe
   }
 
   return { token: generarTokenSimulado(encontrado.usuario.id), usuario: encontrado.usuario };
+}
+
+// Reconstruye el usuario a partir de un token guardado del arranque anterior
+// (RF03: la sesión sobrevive a cerrar la app). El token simulado lleva el id
+// del usuario adentro; contra la API real esto sería un GET /me que devuelve
+// el usuario dueño del token, sin necesitar volver a pedir el email.
+export async function obtenerUsuarioActual(token: string): Promise<Usuario | null> {
+  await simularLatenciaDeRed(null);
+  const [, usuarioId] = token.split(".");
+  return usuariosSimulados.find((u) => u.usuario.id === usuarioId)?.usuario ?? null;
 }
 
 export async function registrarCuenta(nombre: string, email: string, contrasena: string): Promise<RespuestaSesion> {

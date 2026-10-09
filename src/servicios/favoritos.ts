@@ -1,9 +1,9 @@
 import type { Favorito } from "@/tipos";
 import { obtenerBaseDeDatos } from "./base-datos";
 
-// Antes vivía en un array en memoria y se perdía al reiniciar la app. Ahora
-// queda en expo-sqlite, que es justamente el requisito de persistencia local
-// de la cátedra: el favorito tiene que sobrevivir al cierre de la aplicación.
+// Los favoritos van a expo-sqlite y no a un arreglo en memoria: tienen que
+// sobrevivir al cierre de la aplicación, que es el requisito de persistencia
+// local de la cátedra.
 export async function listarFavoritos(usuarioId: string): Promise<Favorito[]> {
   const db = await obtenerBaseDeDatos();
   return db.getAllAsync<Favorito>("SELECT * FROM favoritos WHERE usuarioId = ? ORDER BY creadoEn DESC", usuarioId);

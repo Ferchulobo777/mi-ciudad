@@ -6,65 +6,63 @@ import { Ionicons } from "@react-native-vector-icons/ionicons";
 import type { Lugar } from "@/tipos";
 import { useTema } from "@/hooks/use-tema";
 import { useSesion } from "@/hooks/use-sesion";
+import { useCategorias } from "@/hooks/use-categorias";
+import { useUbicacion } from "@/hooks/use-ubicacion";
 import { TarjetaLugar } from "@/components/tarjeta-lugar";
+import { Encabezado } from "@/components/encabezado";
 import { listarFavoritos } from "@/servicios/favoritos";
 import { obtenerLugaresPorIds } from "@/servicios/lugares";
-import { categoriasSimuladas } from "@/mocks/categorias";
+import { distanciaEnMetros } from "@/utils/geo";
 
 export default function Favoritos() {
   const tema = useTema();
   const { usuario } = useSesion();
+  const { porId: categoriaPorId } = useCategorias();
+  const { posicion } = useUbicacion();
   const [lugares, setLugares] = useState<Lugar[]>([]);
   const [cargando, setCargando] = useState(true);
 
-  const cargar = useCallback(() => {
-    if (!usuario) {
-      setCargando(false);
-      return;
-    }
-    setCargando(true);
-    listarFavoritos(usuario.id)
-      .then((favs) => obtenerLugaresPorIds(favs.map((f) => f.lugarId)))
-      .then((resultado) => {
-        setLugares(resultado);
-        setCargando(false);
-      });
-  }, [usuario]);
-
   // Se recarga cada vez que la pantalla vuelve a estar en foco (no solo al
-  // montarse): si sacás un favorito desde el Detalle y volvés acá, la lista
-  // tiene que reflejarlo sin necesitar un pull-to-refresh manual.
-  useFocusEffect(cargar);
-
-  const categoriaPorId = new Map(categoriasSimuladas.map((c) => [c.id, c]));
+  // montarse): si se saca un favorito desde el detalle y se vuelve acá, la
+  // lista tiene que reflejarlo sin un pull-to-refresh manual.
+  useFocusEffect(
+    useCallback(() => {
+      if (!usuario) {
+        setCargando(false);
+        return;
+      }
+      listarFavoritos(usuario.id)
+        .then((favoritos) => obtenerLugaresPorIds(favoritos.map((f) => f.lugarId)))
+        .then(setLugares)
+        .catch(() => setLugares([]))
+        .finally(() => setCargando(false));
+    }, [usuario]),
+  );
 
   return (
     <SafeAreaView style={[styles.contenedor, { backgroundColor: tema.fondo }]} edges={["top"]}>
-      <View style={styles.encabezado}>
-        <Ionicons name="chevron-back" size={22} color={tema.textoPrincipal} onPress={() => router.back()} />
-        <Text style={[styles.titulo, { color: tema.textoPrincipal }]}>Favoritos</Text>
-      </View>
+      <Encabezado titulo="Favoritos" />
 
       {cargando ? (
         <ActivityIndicator style={{ marginTop: 40 }} color={tema.primario} />
-      ) : lugares.length === 0 ? (
-        <View style={styles.vacio}>
-          <Ionicons name="heart-outline" size={40} color={tema.textoSecundario} />
-          <Text style={{ color: tema.textoSecundario, textAlign: "center", marginTop: 10 }}>
-            Todavía no tenés lugares favoritos. Marcalos con el corazón desde el detalle de un
-            lugar.
-          </Text>
-        </View>
       ) : (
         <FlatList
           contentContainerStyle={styles.lista}
           data={lugares}
           keyExtractor={(l) => l.id}
+          ListEmptyComponent={
+            <View style={styles.vacio}>
+              <Ionicons name="heart-outline" size={44} color={tema.textoSecundario} />
+              <Text style={[styles.textoVacio, { color: tema.textoSecundario }]}>
+                Todavía no tenés lugares favoritos. Marcalos con el corazón desde el detalle de un lugar.
+              </Text>
+            </View>
+          }
           renderItem={({ item }) => (
             <TarjetaLugar
               lugar={item}
               categoria={categoriaPorId.get(item.categoriaId)}
-              distanciaEnMetros={null}
+              distanciaEnMetros={posicion ? distanciaEnMetros(posicion, item.coordenadas) : null}
               onPress={() => router.push({ pathname: "/lugar/[id]", params: { id: item.id } })}
             />
           )}
@@ -76,8 +74,7 @@ export default function Favoritos() {
 
 const styles = StyleSheet.create({
   contenedor: { flex: 1 },
-  encabezado: { flexDirection: "row", alignItems: "center", gap: 14, paddingHorizontal: 20, paddingTop: 12, paddingBottom: 14 },
-  titulo: { fontSize: 20, fontWeight: "800" },
-  lista: { padding: 20, paddingTop: 8 },
-  vacio: { padding: 40, alignItems: "center", marginTop: 40 },
+  lista: { padding: 20, paddingTop: 4 },
+  vacio: { padding: 32, alignItems: "center", marginTop: 30, gap: 10 },
+  textoVacio: { fontSize: 15, textAlign: "center", lineHeight: 22 },
 });

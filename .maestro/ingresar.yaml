@@ -4,10 +4,10 @@ appId: com.miciudad.app
 - tapOn: "Yo"
 - tapOn:
     id: "campo-email"
-- inputText: "maria.villalba@correo.com"
+- inputText: "turista.mi.ciudad@correo.com"
 - tapOn:
     id: "campo-contrasena"
-- inputText: "colon2026"
+- inputText: "MiCiudad2026"
 - tapOn: "Ingresar"
-- assertVisible: "María Villalba"
+- assertVisible: "Turista de Prueba"
 - assertVisible: "Cerrar sesión"

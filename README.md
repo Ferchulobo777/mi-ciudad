@@ -30,9 +30,12 @@ Palmar, con muy poca señal).
 | Lenguaje | TypeScript (modo estricto) |
 | Navegación | [Expo Router](https://docs.expo.dev/router/introduction/) (basada en archivos) |
 | Autenticación | `expo-secure-store` + `expo-local-authentication` (huella/rostro) |
-| Persistencia | `expo-sqlite` |
-| Mapas y ubicación | Leaflet + OpenStreetMap (WebView) + `expo-location` |
-| Cámara y sensores | `expo-camera` (QR) · `expo-haptics` · `expo-network` |
+| Persistencia y red | `expo-sqlite` (favoritos, visitas, copia offline del catálogo y la agenda) · `expo-sqlite/kv-store` (preferencias) · `expo-network` |
+| Mapas y ubicación | Leaflet + OpenStreetMap (WebView) + `expo-location` · ruta caminando con OSRM |
+| Cámara y archivos | `expo-camera` (QR) · `expo-image-picker` · `expo-file-system` (API nueva: `File`/`Directory`/`Paths`) |
+| Sensores y háptica | `expo-sensors` (magnetómetro, flecha hacia el lugar) · `expo-haptics` |
+| Notificaciones | `expo-notifications` (locales: recordatorio de evento, aviso de proximidad, evento suspendido) |
+| Multimedia | `expo-audio` (audioguías, también con la pantalla bloqueada) |
 | Íconos | `@react-native-vector-icons/ionicons` |
 | Estilos | `StyleSheet` nativo de React Native |
 | Testing | Jest + `@testing-library/react-native` (unidad) · Maestro (E2E) |
@@ -107,23 +110,40 @@ tocando "Enter URL manually".
 
 ### 5. Qué probar
 
-Con la app abierta en el celular:
+La app tiene cuatro pestañas, igual que los mockups del documento de diseño: **Mapa** (inicio),
+**Agenda**, **Mi recorrido** y **Yo**. El catálogo completo se abre con la lupa del inicio.
 
-- **Catálogo** (primera pestaña): buscador y filtro por categoría de los lugares turísticos.
-- Tocá un lugar → vas al **Detalle**: marcá el corazón de favorito (te va a pedir iniciar sesión
-  la primera vez) y probá "Cómo llegar" (abre el mapa nativo del teléfono).
-- **Mapa**: los lugares aparecen como marcadores de colores (uno por categoría, sobre un mapa de
-  OpenStreetMap). Tocá uno para ver su nombre y categoría, y "Ver detalle" para ir a esa pantalla.
-  El botón redondo de abajo a la derecha centra el mapa en tu ubicación actual.
-- **Agenda**: tocá un evento y "Guardar con recordatorio" — programa una notificación local.
-- **Ingresar**, con el usuario de prueba: `maria.villalba@correo.com` / `colon2026`. También podés
+- **Mapa (inicio)**: tocá "Usar mi ubicación" en la tarjeta azul para ver "Cerca tuyo" ordenado
+  por distancia (si no das permiso, se calcula desde el centro de Colón y la app sigue andando).
+  Tocá la vista previa del mapa para abrir el **mapa completo**: marcadores por categoría, filtro
+  con los chips de arriba, y el botón de abajo a la derecha para centrarte.
+- **Lupa → Catálogo**: buscador (sin importar tildes: "colon" encuentra "Termas de Colón"),
+  filtro por categoría y orden por distancia o por nombre.
+- Tocá un lugar → **Detalle**: estado del horario ("Abierto ahora · cierra 22:00", o cuándo
+  abre), distancia, horarios de la semana, teléfono y precio. Marcá el corazón de favorito (te va
+  a pedir iniciar sesión la primera vez). Si el lugar está a más de 200 m aparece la **flecha**
+  que apunta hacia dónde queda (usa el magnetómetro: sostené el teléfono horizontal). "Ver en el
+  mapa" traza la ruta caminando y "Cómo llegar" abre la app de mapas del teléfono.
+- **Audioguía** (en el Molino Forclaz): reproducir, pausar, adelantar o retroceder 15 s y ver
+  cuánto falta. En la build de release sigue sonando con el teléfono bloqueado.
+- **Agenda**: tocá un evento y "Guardar con recordatorio" — programa una notificación local una
+  hora antes. Tocar esa notificación abre el evento.
+- **Ingresar**, con el usuario de prueba: `turista.mi.ciudad@correo.com` / `MiCiudad2026`. También podés
   crear una cuenta nueva desde "Crear cuenta".
 - **Mi recorrido**: desde el Detalle de un lugar, "Registrar visita" — probá las tres formas
-  (código QR, por cercanía con el GPS, o carga manual), con foto opcional.
-- **Yo** (última pestaña, con sesión iniciada): cambiá el tema (claro/oscuro/sistema), tocá el
-  avatar para sacarte o elegir una foto de perfil (con recorte nativo), y entrá a "Mis favoritos".
-- Apagá el Wi-Fi del celular con la app abierta: en el Catálogo tiene que aparecer el aviso de
-  "Sin conexión · mostrando datos guardados".
+  (código QR, por cercanía con el GPS, o carga manual), con foto y nota. Los QR de los carteles
+  tienen el formato `COLON:<id del lugar>`, por ejemplo `COLON:lugar-molino-forclaz`: se puede
+  generar uno con cualquier generador de QR para probarlo. Un QR que no es de Mi Ciudad muestra un
+  aviso y la cámara sigue escaneando.
+- **Yo** (con sesión iniciada): tema claro/oscuro/sistema, foto de perfil (cámara o galería, con
+  recorte nativo), "Mis favoritos" y **Aviso de proximidad** (al prenderlo pide ubicación y
+  notificaciones; avisa una sola vez por lugar y por día, mientras la app está abierta).
+
+**Sin conexión (el caso de El Palmar)**: abrí la app una vez con señal, poné el teléfono en modo
+avión y volvé a abrirla. Aparece "Sin conexión · mostrando datos guardados" y el catálogo y la
+agenda se ven igual (salen de la copia guardada en SQLite). Registrá una visita: queda como
+"pendiente de subir" y en el inicio aparece "1 visita esperando para sincronizar". Al sacar el
+modo avión se sube sola y el ícono pasa a una tilde verde.
 
 Cerrá la app del todo y volvé a abrirla: la sesión, los favoritos, el tema, la foto y las visitas
 registradas tienen que seguir ahí — es la parte de persistencia local que pide la cátedra.
@@ -142,13 +162,35 @@ registradas tienen que seguir ahí — es la parte de persistencia local que pid
 - **El celular no logra conectarse**: confirmá que esté en la misma red Wi-Fi que la computadora
   (no datos móviles), y que el firewall de Windows no esté bloqueando Node.js — si aparece un
   aviso de "Windows Defender Firewall" al arrancar `expo start`, tocá "Permitir acceso".
-- **El mapa aparece en blanco o no carga**: la pantalla de Mapa necesita conexión a internet para
-  bajar los tiles de OpenStreetMap (no funciona sin conexión, igual que cualquier app de mapas
-  online) — confirmá que el celular tenga datos o Wi-Fi.
+- **El mapa aparece en blanco o no carga**: el mapa necesita conexión a internet para bajar los
+  tiles de OpenStreetMap (sin señal el resto de la app sigue andando, pero el fondo del mapa no se
+  puede dibujar) — confirmá que el celular tenga datos o Wi-Fi.
 
-El proyecto se prueba con [Expo Go](https://expo.dev/go) durante todo el desarrollo. Recién
-migraría a un development build si en algún momento hiciera falta una librería nativa fuera del
-SDK de Expo (por ahora no hace falta).
+El proyecto se prueba con [Expo Go](https://expo.dev/go) durante todo el desarrollo: todas las
+librerías que usa están incluidas en Expo Go (las notificaciones son locales; las push son las que
+no andan en Expo Go). Dos cosas solo se ven completas en la build de release, porque dependen de
+config plugins de `app.json`: el audio en segundo plano con controles en la pantalla bloqueada, y
+el ícono propio de las notificaciones en Android.
+
+### Build de entrega (APK)
+
+La consigna pide un build de release instalable sin Metro:
+
+```bash
+npx expo install --check
+npm test
+eas build --platform android --profile preview
+```
+
+La primera vez `eas build` pide iniciar sesión en Expo (`eas login`) y vincular el proyecto; al
+terminar devuelve el link del APK, que es lo que se entrega.
+
+## Tests
+
+```bash
+npm test                    # Jest: validaciones, distancias, horarios, QR, proximidad, caché offline
+maestro test .maestro/      # E2E: necesita la build instalada (com.miciudad.app) en un celular o emulador
+```
 
 ## Estructura del proyecto
 
@@ -157,15 +199,17 @@ src/
 ├── app/          # pantallas y rutas (Expo Router)
 ├── components/    # componentes de UI reutilizables
 ├── constants/    # paleta de colores y constantes de la app
-├── hooks/        # hooks propios (sesión, tema)
+├── hooks/        # hooks propios (sesión, tema, ubicación, aviso de proximidad, sincronización)
 ├── mocks/        # datos simulados, tipados contra el contrato de datos
-├── servicios/    # capa de servicios (hoy contra mocks, después contra la API real)
+├── servicios/    # capa de servicios: API simulada, caché offline, SQLite, notificaciones, archivos
 ├── tipos/        # interfaces de TypeScript de cada entidad
-└── utils/        # funciones puras (validaciones, cálculos)
+└── utils/        # funciones puras y testeadas (validaciones, distancias, horarios, QR, proximidad)
 ```
 
-Toda lectura de datos pasa por `src/servicios/`, que hoy devuelve datos simulados y más adelante
-va a hacer la llamada real a la API de la cátedra, sin que las pantallas necesiten cambiar.
+Toda lectura de datos pasa por `src/servicios/`, que hoy devuelve datos simulados con la misma
+forma de respuesta que va a tener la API de la cátedra (`{ datos, meta }`) y más adelante va a
+hacer la llamada real, sin que las pantallas necesiten cambiar. Cada respuesta se guarda en SQLite:
+si después falla la red, se muestra la última copia.
 
 ## Paleta
 

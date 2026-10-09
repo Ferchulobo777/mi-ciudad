@@ -1,20 +1,36 @@
 import type { Evento } from "@/tipos";
 import { eventosSimulados } from "@/mocks/eventos";
+import { eventosVigentes } from "@/utils/fechas";
+import { envolverLista, simularPedido } from "./api";
+import { conRespaldoEnCache } from "./cache";
 import { obtenerBaseDeDatos } from "./base-datos";
-import { programarRecordatorio, cancelarRecordatorio } from "./notificaciones";
+import { programarRecordatorio, cancelarRecordatorio, notificarAhora } from "./notificaciones";
 
-function simularLatenciaDeRed<T>(valor: T, ms = 400): Promise<T> {
-  return new Promise((resolver) => setTimeout(() => resolver(valor), ms));
+async function pedirEventos(): Promise<Evento[]> {
+  const respuesta = await simularPedido(envolverLista(eventosSimulados));
+  return respuesta.datos;
+}
+
+async function obtenerTodos(): Promise<Evento[]> {
+  return conRespaldoEnCache("eventos", pedirEventos);
 }
 
 export async function listarEventos(): Promise<Evento[]> {
-  await simularLatenciaDeRed(null);
-  return [...eventosSimulados].sort((a, b) => new Date(a.inicio).getTime() - new Date(b.inicio).getTime());
+  return eventosVigentes(await obtenerTodos());
 }
 
 export async function obtenerEvento(id: string): Promise<Evento | null> {
-  await simularLatenciaDeRed(null);
-  return eventosSimulados.find((e) => e.id === id) ?? null;
+  const eventos = await obtenerTodos();
+  return eventos.find((e) => e.id === id) ?? null;
+}
+
+export async function listarIdsDeEventosGuardados(usuarioId: string): Promise<string[]> {
+  const db = await obtenerBaseDeDatos();
+  const filas = await db.getAllAsync<{ eventoId: string }>(
+    "SELECT eventoId FROM eventos_guardados WHERE usuarioId = ?",
+    usuarioId,
+  );
+  return filas.map((f) => f.eventoId);
 }
 
 export async function estaGuardado(usuarioId: string, eventoId: string): Promise<boolean> {
@@ -57,4 +73,42 @@ export async function alternarGuardadoConRecordatorio(
     new Date().toISOString(),
   );
   return { guardado: true, conRecordatorio: idNotificacion !== null };
+}
+
+/**
+ * El PRD pide que, si un evento guardado se suspende o se cancela (por
+ * lluvia, por ejemplo), quien lo guardó se entere. Se revisa cada vez que se
+ * actualiza la agenda: si cambió el estado, se cancela el recordatorio (ya no
+ * tiene sentido) y se avisa una sola vez.
+ */
+export async function revisarCambiosEnEventosGuardados(usuarioId: string): Promise<void> {
+  const db = await obtenerBaseDeDatos();
+  const guardados = await db.getAllAsync<{ id: string; eventoId: string; idNotificacion: string | null }>(
+    "SELECT id, eventoId, idNotificacion FROM eventos_guardados WHERE usuarioId = ? AND avisoCambioEnviado = 0",
+    usuarioId,
+  );
+  if (guardados.length === 0) return;
+
+  let eventos: Evento[];
+  try {
+    eventos = await obtenerTodos();
+  } catch {
+    return; // Sin red y sin copia local no hay con qué comparar.
+  }
+
+  for (const guardado of guardados) {
+    const evento = eventos.find((e) => e.id === guardado.eventoId);
+    if (!evento || (evento.estado !== "suspendido" && evento.estado !== "cancelado")) continue;
+
+    if (guardado.idNotificacion) await cancelarRecordatorio(guardado.idNotificacion);
+    await db.runAsync(
+      "UPDATE eventos_guardados SET avisoCambioEnviado = 1, idNotificacion = NULL WHERE id = ?",
+      guardado.id,
+    );
+    await notificarAhora({
+      titulo: evento.estado === "suspendido" ? "Evento suspendido" : "Evento cancelado",
+      cuerpo: `${evento.titulo}: ${evento.estado === "suspendido" ? "se suspendió" : "se canceló"}. Tocá para ver el detalle.`,
+      ruta: `/evento/${evento.id}`,
+    });
+  }
 }

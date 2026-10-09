@@ -15,6 +15,9 @@
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "ios": {
@@ -31,33 +34,70 @@
         {
           "backgroundColor": "#0B6E8C",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 120
         }
       ],
-      "expo-secure-store",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Mi Ciudad usa Face ID para que vuelvas a entrar a tu cuenta sin escribir la contraseña."
+        }
+      ],
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Mi Ciudad usa Face ID para que vuelvas a entrar a tu cuenta sin escribir la contraseña."
+        }
+      ],
       "@react-native-vector-icons/ionicons",
       "expo-sqlite",
       "expo-image",
       [
         "expo-image-picker",
         {
-          "photosPermission": "Mi Ciudad usa tus fotos para elegir tu foto de perfil.",
-          "cameraPermission": "Mi Ciudad usa la cámara para sacar tu foto de perfil y para registrar tus visitas."
+          "photosPermission": "Mi Ciudad usa tus fotos para elegir tu foto de perfil o la foto de una visita.",
+          "cameraPermission": "Mi Ciudad usa la cámara para escanear el código QR del cartel de un lugar, sacar la foto de tus visitas y tu foto de perfil.",
+          "microphonePermission": false
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Mi Ciudad usa la cámara para escanear el código QR de un lugar y para la foto de tu visita."
+          "cameraPermission": "Mi Ciudad usa la cámara para escanear el código QR del cartel de un lugar, sacar la foto de tus visitas y tu foto de perfil.",
+          "recordAudioAndroid": false
         }
       ],
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Mi Ciudad usa tu ubicación para mostrar los lugares cercanos y para registrar una visita por cercanía."
+          "locationWhenInUsePermission": "Mi Ciudad usa tu ubicación para mostrarte qué lugares tenés cerca, indicarte hacia dónde queda cada uno y registrar una visita por cercanía.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "motionUsagePermission": false
         }
       ],
-      "expo-audio"
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "enableBackgroundPlayback": true
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/notificacion-icono.png",
+          "color": "#0B6E8C"
+        }
+      ],
+      [
+        "expo-sensors",
+        {
+          "motionPermission": false
+        }
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

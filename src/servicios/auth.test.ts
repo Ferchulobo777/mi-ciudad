@@ -1,7 +1,13 @@
-import { iniciarSesion, reingresarConBiometria, registrarCuenta, ErrorDeAutenticacion } from "@/servicios/auth";
+import {
+  iniciarSesion,
+  reingresarConBiometria,
+  registrarCuenta,
+  obtenerUsuarioActual,
+  ErrorDeAutenticacion,
+} from "@/servicios/auth";
 
-const EMAIL_DE_PRUEBA = "maria.villalba@correo.com";
-const CONTRASENA_DE_PRUEBA = "colon2026";
+const EMAIL_DE_PRUEBA = "turista.mi.ciudad@correo.com";
+const CONTRASENA_DE_PRUEBA = "MiCiudad2026";
 
 describe("iniciarSesion", () => {
   it("devuelve un token y el usuario con credenciales correctas", async () => {
@@ -38,6 +44,19 @@ describe("reingresarConBiometria", () => {
     await expect(reingresarConBiometria("fantasma@correo.com")).rejects.toMatchObject({
       codigo: "CREDENCIALES_INVALIDAS",
     });
+  });
+});
+
+describe("obtenerUsuarioActual", () => {
+  it("reconstruye el usuario a partir de un token de esa sesión", async () => {
+    const { token } = await iniciarSesion(EMAIL_DE_PRUEBA, CONTRASENA_DE_PRUEBA);
+    const usuario = await obtenerUsuarioActual(token);
+    expect(usuario?.email).toBe(EMAIL_DE_PRUEBA);
+  });
+
+  it("devuelve null para un token que no corresponde a ningún usuario", async () => {
+    const usuario = await obtenerUsuarioActual("token-simulado.no-existe.123");
+    expect(usuario).toBeNull();
   });
 });
 

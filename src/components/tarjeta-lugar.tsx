@@ -1,10 +1,12 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { Categoria, Lugar } from "@/tipos";
 import { useTema } from "@/hooks/use-tema";
-import { estaAbiertoAhora, formatearDistancia } from "@/servicios/lugares";
 import { ImagenLugar } from "@/components/imagen-lugar";
+import { describirHorario } from "@/utils/horarios";
+import { formatearDistancia } from "@/utils/geo";
+import { formatearPrecio } from "@/utils/formato";
 
-export const ALTO_TARJETA_LUGAR = 76;
+export const ALTO_TARJETA_LUGAR = 80;
 
 interface Props {
   lugar: Lugar;
@@ -15,40 +17,54 @@ interface Props {
 
 export function TarjetaLugar({ lugar, categoria, distanciaEnMetros, onPress }: Props) {
   const tema = useTema();
-  const abierto = estaAbiertoAhora(lugar);
+  const horario = describirHorario(lugar);
+  const cerrado = horario.estado === "cerrado";
+
+  const detalle = [
+    categoria?.nombre ?? "Sin categoría",
+    horario.estado === "abierto" ? "Abierto ahora" : cerrado ? "Cerrado" : null,
+    formatearPrecio(lugar.precioEntrada) === "Gratis" ? "Gratis" : null,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  const distancia = distanciaEnMetros === null ? null : formatearDistancia(distanciaEnMetros);
 
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
+      accessibilityLabel={[lugar.nombre, detalle, distancia ? `a ${distancia}` : null].filter(Boolean).join(", ")}
       style={({ pressed }) => [
         styles.tarjeta,
-        { backgroundColor: tema.superficie, height: ALTO_TARJETA_LUGAR },
-        pressed && { opacity: 0.85 },
+        { backgroundColor: tema.superficie, minHeight: ALTO_TARJETA_LUGAR },
+        // Atenuado, como en el mockup: sigue disponible para ver el detalle y
+        // cuándo abre, pero no compite con lo que está abierto.
+        cerrado && { opacity: 0.6 },
+        pressed && { opacity: 0.8 },
       ]}
     >
-      <ImagenLugar categoria={categoria} tamañoIcono={18} style={styles.miniatura} />
+      <ImagenLugar categoria={categoria} tamañoIcono={20} style={styles.miniatura} />
       <View style={styles.info}>
         <Text style={[styles.nombre, { color: tema.textoPrincipal }]} numberOfLines={1}>
           {lugar.nombre}
         </Text>
-        <Text style={[styles.subtitulo, { color: abierto ? tema.exito : tema.textoSecundario }]} numberOfLines={1}>
-          {categoria?.nombre ?? "Sin categoría"}
-          {abierto ? " · Abierto ahora" : ""}
+        <Text
+          style={[styles.subtitulo, { color: horario.estado === "abierto" ? tema.exito : tema.textoSecundario }]}
+          numberOfLines={1}
+        >
+          {detalle}
         </Text>
       </View>
-      {distanciaEnMetros !== null && (
-        <Text style={[styles.distancia, { color: tema.primario }]}>{formatearDistancia(distanciaEnMetros)}</Text>
-      )}
+      {distancia && <Text style={[styles.distancia, { color: tema.primario }]}>{distancia}</Text>}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
   tarjeta: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 14, padding: 12, marginBottom: 10 },
-  miniatura: { width: 44, height: 44, borderRadius: 10, flexShrink: 0 },
+  miniatura: { width: 48, height: 48, borderRadius: 12, flexShrink: 0 },
   info: { flex: 1 },
-  nombre: { fontSize: 14, fontWeight: "700" },
-  subtitulo: { fontSize: 12, marginTop: 2 },
-  distancia: { fontSize: 12, fontWeight: "700" },
+  nombre: { fontSize: 16, fontWeight: "700" },
+  subtitulo: { fontSize: 14, marginTop: 2 },
+  distancia: { fontSize: 14, fontWeight: "800" },
 });

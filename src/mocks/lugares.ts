@@ -1,7 +1,7 @@
 import type { Lugar } from "@/tipos";
 
 // Coordenadas reales de Colón, Entre Ríos, con pequeños corrimientos entre sí
-// para que el mapa (cuando se construya) no muestre todos los pines apilados.
+// para que el mapa no muestre todos los pines apilados.
 export const lugaresSimulados: Lugar[] = [
   {
     id: "lugar-termas-colon",
@@ -27,7 +27,7 @@ export const lugaresSimulados: Lugar[] = [
     sitioWeb: "https://termasdecolon.tur.ar",
     precioEntrada: 8500,
     audioguia: null,
-    codigoQr: "QR-TERMAS-COLON",
+    codigoQr: "COLON:lugar-termas-colon",
     accesible: true,
     activo: true,
     actualizadoEn: "2026-08-01T09:00:00-03:00",
@@ -43,12 +43,12 @@ export const lugaresSimulados: Lugar[] = [
     coordenadas: { latitud: -32.2158, longitud: -58.1401 },
     direccion: "Costanera Norte, Colón",
     imagenes: [],
-    horarios: [{ dia: 0, abre: "00:00", cierra: "23:59" }],
+    horarios: [],
     telefono: null,
     sitioWeb: null,
-    precioEntrada: null,
+    precioEntrada: 0,
     audioguia: null,
-    codigoQr: "QR-PLAYA-PASO-VELA",
+    codigoQr: "COLON:lugar-playa-paso-vela",
     accesible: false,
     activo: true,
     actualizadoEn: "2026-07-20T09:00:00-03:00",
@@ -76,7 +76,7 @@ export const lugaresSimulados: Lugar[] = [
     sitioWeb: null,
     precioEntrada: 1500,
     audioguia: { url: "https://cdn.miciudad.app/audioguias/molino-forclaz.mp3", duracionSegundos: 33, idioma: "es" },
-    codigoQr: "QR-MOLINO-FORCLAZ",
+    codigoQr: "COLON:lugar-molino-forclaz",
     accesible: false,
     activo: true,
     actualizadoEn: "2026-06-10T09:00:00-03:00",
@@ -92,7 +92,7 @@ export const lugaresSimulados: Lugar[] = [
     coordenadas: { latitud: -32.2087, longitud: -58.1418 },
     direccion: "Costanera Sur, Colón",
     imagenes: [],
-    horarios: [{ dia: 0, abre: "00:00", cierra: "23:59" }],
+    horarios: [],
     telefono: null,
     sitioWeb: null,
     precioEntrada: null,
@@ -111,7 +111,15 @@ export const lugaresSimulados: Lugar[] = [
     coordenadas: { latitud: -32.2213, longitud: -58.1467 },
     direccion: "San Martín 456, Colón",
     imagenes: [],
-    horarios: [{ dia: 0, abre: "00:00", cierra: "23:59" }],
+    horarios: [
+      { dia: 0, abre: "00:00", cierra: "23:59" },
+      { dia: 1, abre: "00:00", cierra: "23:59" },
+      { dia: 2, abre: "00:00", cierra: "23:59" },
+      { dia: 3, abre: "00:00", cierra: "23:59" },
+      { dia: 4, abre: "00:00", cierra: "23:59" },
+      { dia: 5, abre: "00:00", cierra: "23:59" },
+      { dia: 6, abre: "00:00", cierra: "23:59" },
+    ],
     telefono: "+54 3447 424100",
     sitioWeb: "https://hosteriadelrio.com.ar",
     precioEntrada: null,

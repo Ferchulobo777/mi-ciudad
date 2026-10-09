@@ -20,7 +20,7 @@ export const eventosSimulados: Evento[] = [
     inicio: enHoras(3),
     fin: enHoras(6),
     imagenUrl: null,
-    precio: null,
+    precio: 0,
     estado: "programado",
   },
   {
@@ -33,7 +33,7 @@ export const eventosSimulados: Evento[] = [
     inicio: enHoras(5),
     fin: enHoras(7),
     imagenUrl: null,
-    precio: null,
+    precio: 0,
     estado: "suspendido",
   },
   {

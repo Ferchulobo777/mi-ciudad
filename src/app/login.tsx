@@ -11,7 +11,7 @@ export default function Login() {
     <SafeAreaView style={[styles.contenedor, { backgroundColor: tema.fondo }]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <FormularioLogin onExito={() => router.back()} />
+          <FormularioLogin esModal onExito={() => router.back()} />
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>

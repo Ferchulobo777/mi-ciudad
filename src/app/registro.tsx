@@ -44,7 +44,9 @@ export default function Registro() {
       const { token, usuario } = await registrarCuenta(nombre, email, contrasena);
       await guardarUltimoEmail(email);
       await sesion.iniciar(token, usuario);
-      router.replace("/");
+      // Vuelve a donde estaba el turista cuando le pidieron la cuenta (la
+      // pestaña Yo, o el lugar que quería guardar), ahora con sesión.
+      router.back();
     } catch (error) {
       setErrorGeneral(
         error instanceof ErrorDeAutenticacion ? error.message : "No se pudo crear la cuenta. Probá de nuevo.",

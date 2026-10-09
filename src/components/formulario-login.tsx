@@ -16,13 +16,15 @@ interface Props {
    * atrás; embebido en una tab no hace falta (el estado de sesión ya alcanza
    * para que la pantalla se vuelva a renderizar como usuario ingresado). */
   onExito?: () => void;
-  mostrarSeguirSinCuenta?: boolean;
+  /** true cuando el formulario se muestra en la pantalla modal de Login (y no
+   * embebido en la pestaña Yo): ofrece "Seguir sin cuenta" para cerrarla. */
+  esModal?: boolean;
 }
 
 // Formulario compartido entre la pantalla de Login y la tab Yo: se mostraba
 // en dos lugares con la misma lógica duplicada, y una pantalla intermedia de
 // "todavía no ingresaste" antes de llegar acá que no sumaba nada.
-export function FormularioLogin({ onExito, mostrarSeguirSinCuenta = true }: Props) {
+export function FormularioLogin({ onExito, esModal = false }: Props) {
   const tema = useTema();
   const sesion = useSesion();
 
@@ -142,7 +144,7 @@ export function FormularioLogin({ onExito, mostrarSeguirSinCuenta = true }: Prop
         </View>
       ) : null}
 
-      {mostrarSeguirSinCuenta ? (
+      {esModal ? (
         <View style={{ marginTop: 8 }}>
           <Boton etiqueta="Seguir sin cuenta" variante="texto" onPress={() => router.back()} />
         </View>
@@ -150,7 +152,13 @@ export function FormularioLogin({ onExito, mostrarSeguirSinCuenta = true }: Prop
 
       <Text style={[styles.pie, { color: tema.textoSecundario }]}>
         ¿No tenés cuenta?{" "}
-        <Text style={{ color: tema.primario, fontWeight: "700" }} onPress={() => router.push("/registro")}>
+        {/* Desde el modal de Login se reemplaza en vez de apilar: así, al
+            terminar el registro, "atrás" vuelve directo a la pantalla que pidió
+            la cuenta (por ejemplo, el lugar que se quería marcar como favorito). */}
+        <Text
+          style={{ color: tema.primario, fontWeight: "700" }}
+          onPress={() => (esModal ? router.replace("/registro") : router.push("/registro"))}
+        >
           Registrate
         </Text>
       </Text>

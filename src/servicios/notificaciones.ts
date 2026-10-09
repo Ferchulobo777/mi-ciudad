@@ -1,11 +1,17 @@
+import { Platform } from "react-native";
+import type { NotificationResponse } from "expo-notifications";
 import type { Evento } from "@/tipos";
 import { formatearHora } from "@/utils/fechas";
 
-// En Android, expo-notifications no funciona dentro de Expo Go desde el SDK
-// 53: hace falta un development build. Se carga de forma diferida y con
-// manejo de error para que guardar un evento siga funcionando igual, sin el
-// recordatorio, en vez de romper toda la pantalla de Agenda apenas se abre.
+// Las notificaciones locales funcionan en Expo Go; lo que se sacó de Expo Go
+// en Android desde el SDK 53 son las push. Igual se carga el módulo de forma
+// diferida y con manejo de error: si por algún motivo no está disponible, la
+// app sigue funcionando sin avisos en vez de romper la pantalla que los usa.
+// (Los `import type` se borran al compilar: no cargan el módulo antes de
+// tiempo.)
 type ModuloNotificaciones = typeof import("expo-notifications");
+
+const CANAL_AVISOS = "avisos";
 
 let promesaModulo: Promise<ModuloNotificaciones | null> | null = null;
 
@@ -13,9 +19,9 @@ function cargarModulo(): Promise<ModuloNotificaciones | null> {
   if (!promesaModulo) {
     promesaModulo = import("expo-notifications")
       .then((Notifications) => {
-        // Las notificaciones que dispara la propia app tienen que verse
-        // aunque esté abierta en primer plano, si no expo-notifications las
-        // descarta en silencio.
+        // Se declara una sola vez, al cargar el módulo. Sin handler, una
+        // notificación que llega con la app abierta no se muestra: parece que
+        // se perdió (el error número uno según la teoría de la Unidad 4).
         Notifications.setNotificationHandler({
           handleNotification: async () => ({
             shouldShowBanner: true,
@@ -31,39 +37,68 @@ function cargarModulo(): Promise<ModuloNotificaciones | null> {
   return promesaModulo;
 }
 
-export async function hayPermisoDeNotificaciones(): Promise<boolean> {
+// En Android 13+ el cartel de permiso no aparece si no existe al menos un
+// canal: por eso se crea antes de pedirlo, nunca después.
+async function asegurarCanal(Notifications: ModuloNotificaciones): Promise<void> {
+  if (Platform.OS !== "android") return;
+  await Notifications.setNotificationChannelAsync(CANAL_AVISOS, {
+    name: "Avisos de Mi Ciudad",
+    description: "Recordatorios de eventos guardados y lugares cercanos.",
+    importance: Notifications.AndroidImportance.HIGH,
+    vibrationPattern: [0, 250, 250, 250],
+  });
+}
+
+/** Consulta sin mostrar el cartel del sistema. */
+export async function tienePermisoDeNotificaciones(): Promise<boolean> {
+  const Notifications = await cargarModulo();
+  if (!Notifications) return false;
+  const { status } = await Notifications.getPermissionsAsync();
+  return status === "granted";
+}
+
+/**
+ * Se llama recién cuando el turista activa algo que necesita avisos (guardar
+ * un evento, prender el aviso de proximidad), nunca al abrir la app: pedir el
+ * permiso sin contexto es la forma más rápida de perderlo para siempre.
+ */
+export async function pedirPermisoDeNotificaciones(): Promise<boolean> {
   const Notifications = await cargarModulo();
   if (!Notifications) return false;
 
+  await asegurarCanal(Notifications);
   const { status } = await Notifications.getPermissionsAsync();
   if (status === "granted") return true;
-  const { status: nuevoEstado } = await Notifications.requestPermissionsAsync();
-  return nuevoEstado === "granted";
+  const pedido = await Notifications.requestPermissionsAsync();
+  return pedido.status === "granted";
 }
 
-// El recordatorio se dispara una hora antes del evento; si falta menos de una
-// hora, se dispara en el momento (evento.inicio ya pasó de largo la ventana
-// habitual de aviso previo). Devuelve null si no se pudo programar, ya sea
-// por falta de permiso o porque el entorno no lo soporta (Expo Go/Android).
+/**
+ * Programa el recordatorio una hora antes del evento (o en el momento, si ya
+ * falta menos). Devuelve el id de la notificación, que se guarda para poder
+ * cancelar justo esa si el turista saca el evento: reprogramar sin cancelar
+ * duplicaría los avisos.
+ */
 export async function programarRecordatorio(evento: Evento): Promise<string | null> {
   const Notifications = await cargarModulo();
-  if (!Notifications) return null;
-
-  const permiso = await hayPermisoDeNotificaciones();
-  if (!permiso) return null;
+  if (!Notifications || !(await pedirPermisoDeNotificaciones())) return null;
 
   const inicio = new Date(evento.inicio);
   const unaHoraAntes = new Date(inicio.getTime() - 60 * 60 * 1000);
-  const fechaDeAviso = unaHoraAntes.getTime() > Date.now() ? unaHoraAntes : inicio;
+  const fechaDeAviso = unaHoraAntes.getTime() > Date.now() ? unaHoraAntes : new Date(Date.now() + 5000);
 
   return Notifications.scheduleNotificationAsync({
     content: {
       title: evento.titulo,
       body: `Empieza a las ${formatearHora(inicio)}${evento.direccionLibre ? " · " + evento.direccionLibre : ""}`,
+      // La ruta y no el texto: es lo que permite que tocar el aviso lleve
+      // directo al detalle del evento.
+      data: { ruta: `/evento/${evento.id}` },
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: fechaDeAviso,
+      channelId: CANAL_AVISOS,
     },
   });
 }
@@ -72,4 +107,57 @@ export async function cancelarRecordatorio(idNotificacion: string): Promise<void
   const Notifications = await cargarModulo();
   if (!Notifications) return;
   await Notifications.cancelScheduledNotificationAsync(idNotificacion);
+}
+
+interface AvisoInmediato {
+  titulo: string;
+  cuerpo: string;
+  ruta: string;
+}
+
+/** Para avisos que responden a algo que acaba de pasar (proximidad, evento suspendido). */
+export async function notificarAhora({ titulo, cuerpo, ruta }: AvisoInmediato): Promise<void> {
+  const Notifications = await cargarModulo();
+  if (!Notifications || !(await tienePermisoDeNotificaciones())) return;
+  await Notifications.scheduleNotificationAsync({
+    content: { title: titulo, body: cuerpo, data: { ruta } },
+    trigger: { channelId: CANAL_AVISOS },
+  });
+}
+
+/**
+ * Escucha los toques sobre una notificación y devuelve la ruta que trae en
+ * `data`. Cubre también el caso de la app cerrada: el toque que la abrió
+ * queda guardado como "última respuesta" y se procesa al arrancar.
+ * Devuelve la función que suelta la suscripción, para el cleanup del efecto.
+ */
+export function escucharToquesEnNotificaciones(alTocar: (ruta: string) => void): () => void {
+  let suscripcion: { remove: () => void } | null = null;
+  let suelto = false;
+
+  cargarModulo().then((Notifications) => {
+    if (!Notifications || suelto) return;
+
+    const rutaDe = (respuesta: NotificationResponse) => {
+      const ruta = respuesta.notification.request.content.data?.ruta;
+      return typeof ruta === "string" ? ruta : null;
+    };
+
+    const ultima = Notifications.getLastNotificationResponse();
+    if (ultima) {
+      const ruta = rutaDe(ultima);
+      Notifications.clearLastNotificationResponse();
+      if (ruta) alTocar(ruta);
+    }
+
+    suscripcion = Notifications.addNotificationResponseReceivedListener((respuesta) => {
+      const ruta = rutaDe(respuesta);
+      if (ruta) alTocar(ruta);
+    });
+  });
+
+  return () => {
+    suelto = true;
+    suscripcion?.remove();
+  };
 }

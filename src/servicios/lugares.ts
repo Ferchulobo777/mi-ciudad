@@ -1,34 +1,31 @@
 import type { Categoria, Lugar } from "@/tipos";
 import { categoriasSimuladas } from "@/mocks/categorias";
 import { lugaresSimulados } from "@/mocks/lugares";
+import { envolverLista, simularPedido } from "./api";
+import { conRespaldoEnCache } from "./cache";
 
-function simularLatenciaDeRed<T>(valor: T, ms = 400): Promise<T> {
-  return new Promise((resolver) => setTimeout(() => resolver(valor), ms));
+// Única puerta de entrada a los lugares y categorías: ninguna pantalla
+// importa los mocks directamente (regla del PRD). Hoy cada función simula un
+// GET a la API; cuando la cátedra publique la real, lo único que cambia es el
+// cuerpo de pedirLugares/pedirCategorias por un fetch.
+async function pedirLugares(): Promise<Lugar[]> {
+  const respuesta = await simularPedido(envolverLista(lugaresSimulados));
+  return respuesta.datos;
 }
 
-// Fórmula de haversine para la distancia entre dos coordenadas. Recibe la
-// posición como parámetro en vez de leer el GPS acá adentro, así se puede
-// usar tanto con la posición real (Catálogo, Mapa) como con la de respaldo
-// cuando el turista no dio permiso de ubicación.
-export function distanciaEnMetros(a: { latitud: number; longitud: number }, b: { latitud: number; longitud: number }) {
-  const radioTierra = 6371000;
-  const radianes = (grados: number) => (grados * Math.PI) / 180;
-  const dLat = radianes(b.latitud - a.latitud);
-  const dLon = radianes(b.longitud - a.longitud);
-  const factor =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(radianes(a.latitud)) * Math.cos(radianes(b.latitud)) * Math.sin(dLon / 2) ** 2;
-  return radioTierra * 2 * Math.atan2(Math.sqrt(factor), Math.sqrt(1 - factor));
+async function pedirCategorias(): Promise<Categoria[]> {
+  const respuesta = await simularPedido(envolverLista(categoriasSimuladas));
+  return respuesta.datos;
 }
 
-export function formatearDistancia(metros: number): string {
-  if (metros < 1000) return `${Math.round(metros / 10) * 10} m`;
-  return `${(metros / 1000).toFixed(1)} km`;
+async function obtenerCatalogoCompleto(): Promise<Lugar[]> {
+  const lugares = await conRespaldoEnCache("lugares", pedirLugares);
+  return lugares.filter((lugar) => lugar.activo);
 }
 
 export async function listarCategorias(): Promise<Categoria[]> {
-  await simularLatenciaDeRed(null);
-  return [...categoriasSimuladas].sort((a, b) => a.orden - b.orden);
+  const categorias = await conRespaldoEnCache("categorias", pedirCategorias);
+  return [...categorias].sort((a, b) => a.orden - b.orden);
 }
 
 interface FiltroLugares {
@@ -37,39 +34,40 @@ interface FiltroLugares {
 }
 
 export async function listarLugares(filtro: FiltroLugares = {}): Promise<Lugar[]> {
-  await simularLatenciaDeRed(null);
-  let resultado = lugaresSimulados.filter((lugar) => lugar.activo);
+  let resultado = await obtenerCatalogoCompleto();
 
   if (filtro.categoriaId) {
     resultado = resultado.filter((lugar) => lugar.categoriaId === filtro.categoriaId);
   }
   if (filtro.busqueda?.trim()) {
-    const termino = filtro.busqueda.trim().toLowerCase();
-    resultado = resultado.filter((lugar) => lugar.nombre.toLowerCase().includes(termino));
+    const termino = normalizar(filtro.busqueda);
+    resultado = resultado.filter((lugar) => normalizar(lugar.nombre).includes(termino));
   }
   return resultado;
 }
 
+// Sin tildes ni mayúsculas: el turista escribe "colon" o "museo" en el
+// teclado del celular, al sol y con una mano, y tiene que encontrar igual
+// "Termas de Colón" o "Museos".
+function normalizar(texto: string): string {
+  return texto
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "");
+}
+
 export async function obtenerLugaresPorIds(ids: string[]): Promise<Lugar[]> {
-  await simularLatenciaDeRed(null);
-  return lugaresSimulados.filter((lugar) => ids.includes(lugar.id));
+  const lugares = await obtenerCatalogoCompleto();
+  return lugares.filter((lugar) => ids.includes(lugar.id));
 }
 
 export async function obtenerLugar(id: string): Promise<Lugar | null> {
-  await simularLatenciaDeRed(null);
-  return lugaresSimulados.find((lugar) => lugar.id === id) ?? null;
+  const lugares = await obtenerCatalogoCompleto();
+  return lugares.find((lugar) => lugar.id === id) ?? null;
 }
 
-// 0 es domingo, igual que Date.getDay(): mismo criterio documentado en Horario.
-export function estaAbiertoAhora(lugar: Lugar, ahora = new Date()): boolean {
-  const horarioDeHoy = lugar.horarios.find((h) => h.dia === ahora.getDay());
-  if (!horarioDeHoy) return false;
-
-  const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
-  const [horaApertura, minutoApertura] = horarioDeHoy.abre.split(":").map(Number);
-  const [horaCierre, minutoCierre] = horarioDeHoy.cierra.split(":").map(Number);
-  const minutosApertura = horaApertura * 60 + minutoApertura;
-  const minutosCierre = horaCierre * 60 + minutoCierre;
-
-  return minutosActuales >= minutosApertura && minutosActuales <= minutosCierre;
+export async function obtenerCategoria(id: string): Promise<Categoria | null> {
+  const categorias = await listarCategorias();
+  return categorias.find((categoria) => categoria.id === id) ?? null;
 }
