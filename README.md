@@ -17,10 +17,10 @@ Palmar, con muy poca señal).
 
 ## Integrantes
 
-- Fernando Ruben Bareiro Ruiz
+- Fernando Rodriguez
 - Natalia Ailén Gonzalez
 - Ballejo Micaela Celeste
-- Fernando Rodriguez
+- Fernando Ruben Bareiro Ruiz
 
 ## Tecnologías
 
