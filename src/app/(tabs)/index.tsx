@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { WebView } from "react-native-webview";
 import { router } from "expo-router";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import type { Lugar } from "@/tipos";
@@ -15,15 +14,16 @@ import { BannerSinConexion } from "@/components/banner-sin-conexion";
 import { AvisoUbicacion } from "@/components/aviso-ubicacion";
 import { TarjetaLugar } from "@/components/tarjeta-lugar";
 import { EstadoError } from "@/components/estado-error";
+import { MapaLugares } from "@/components/mapa-lugares";
 import { listarLugares } from "@/servicios/lugares";
 import { distanciaEnMetros, ordenarPorDistancia } from "@/utils/geo";
-import { construirHtmlMapa } from "@/utils/mapa-html";
+import { CENTRO_DE_COLON, hayMapaNativo } from "@/utils/mapa";
 import type { Posicion } from "@/servicios/ubicacion";
 
-// Centro de Colón: desde acá se calculan las distancias mientras el GPS no
+// Desde el centro de Colón se calculan las distancias mientras el GPS no
 // responde o si el turista niega el permiso (la app tiene que seguir siendo
 // usable sin ubicación, lo pide el PRD).
-const POSICION_DE_RESPALDO: Posicion = { latitud: -32.2246, longitud: -58.1489 };
+const POSICION_DE_RESPALDO: Posicion = CENTRO_DE_COLON;
 const CANTIDAD_CERCA = 5;
 
 export default function Inicio() {
@@ -59,21 +59,6 @@ export default function Inicio() {
 
   const desde = ubicacion.posicion ?? POSICION_DE_RESPALDO;
   const cercanos = useMemo(() => ordenarPorDistancia(lugares, desde).slice(0, CANTIDAD_CERCA), [lugares, desde]);
-
-  // La vista previa se regenera solo cuando cambian los datos de fondo: es
-  // una tarjeta quieta, el mapa completo se abre al tocarla.
-  const htmlMapa = useMemo(
-    () =>
-      construirHtmlMapa({
-        lugares,
-        categoriaPorId,
-        posicion: ubicacion.posicion,
-        colorPrimario: tema.primario,
-        esOscuro,
-        interactivo: false,
-      }),
-    [lugares, categoriaPorId, ubicacion.posicion, tema.primario, esOscuro],
-  );
 
   return (
     <SafeAreaView style={[styles.contenedor, { backgroundColor: tema.fondo }]} edges={["top"]}>
@@ -115,11 +100,10 @@ export default function Inicio() {
           alPedir={ubicacion.pedir}
         />
 
-        {/* Leaflet y las tiles de OpenStreetMap se descargan de internet: sin
-            señal el mapa no se puede dibujar. En vez de una tarjeta en blanco
-            se explica por qué, y la lista de abajo sigue funcionando con la
-            copia guardada (como en el mockup del estado sin conexión). */}
-        {sinConexion ? (
+        {/* Sin señal el mapa no se puede dibujar entero. En vez de una tarjeta
+            en blanco se explica por qué, y la lista de abajo sigue funcionando
+            con la copia guardada (como en el mockup del estado sin conexión). */}
+        {!hayMapaNativo() ? null : sinConexion ? (
           <View style={[styles.mapaSinConexion, { backgroundColor: tema.superficie, borderColor: tema.borde }]}>
             <Ionicons name="map-outline" size={28} color={tema.textoSecundario} />
             <Text style={[styles.textoSinConexion, { color: tema.textoSecundario }]}>
@@ -138,7 +122,14 @@ export default function Inicio() {
               // gesto de la pantalla no compite con el del mapa y cualquier
               // toque abre el mapa completo.
               <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-                <WebView originWhitelist={["*"]} source={{ html: htmlMapa }} style={styles.webview} />
+                <MapaLugares
+                  lugares={lugares}
+                  categoriaPorId={categoriaPorId}
+                  posicion={ubicacion.posicion}
+                  colorPrimario={tema.primario}
+                  esOscuro={esOscuro}
+                  interactivo={false}
+                />
               </View>
             )}
             <View style={[styles.etiquetaMapa, { backgroundColor: tema.superficie }]}>
@@ -194,7 +185,6 @@ const styles = StyleSheet.create({
   mapaSinConexion: { marginHorizontal: 20, borderRadius: 24, borderWidth: 1, padding: 24, alignItems: "center", gap: 10 },
   textoSinConexion: { fontSize: 15, textAlign: "center", lineHeight: 22 },
   tarjetaMapa: { height: 260, marginHorizontal: 20, borderRadius: 24, overflow: "hidden" },
-  webview: { flex: 1, backgroundColor: "transparent" },
   etiquetaMapa: { position: "absolute", right: 12, bottom: 12, flexDirection: "row", alignItems: "center", gap: 6, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 100 },
   textoEtiquetaMapa: { fontSize: 13, fontWeight: "800" },
   subtitulo: { fontSize: 20, fontWeight: "800", paddingHorizontal: 20, marginTop: 22, marginBottom: 12 },

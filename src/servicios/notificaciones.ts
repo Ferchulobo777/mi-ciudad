@@ -4,7 +4,7 @@ import type { Evento } from "@/tipos";
 import { formatearHora } from "@/utils/fechas";
 
 // Las notificaciones locales funcionan en Expo Go; lo que se sacó de Expo Go
-// en Android desde el SDK 53 son las push. Igual se carga el módulo de forma
+// en Android desde el SDK 53 son las push (ver servicios/push.ts). Igual se carga el módulo de forma
 // diferida y con manejo de error: si por algún motivo no está disponible, la
 // app sigue funcionando sin avisos en vez de romper la pantalla que los usa.
 // (Los `import type` se borran al compilar: no cargan el módulo antes de
@@ -138,9 +138,13 @@ export function escucharToquesEnNotificaciones(alTocar: (ruta: string) => void):
   cargarModulo().then((Notifications) => {
     if (!Notifications || suelto) return;
 
+    // Las locales traen la ruta armada; las push del servidor traen el id
+    // del evento que cambió de estado.
     const rutaDe = (respuesta: NotificationResponse) => {
-      const ruta = respuesta.notification.request.content.data?.ruta;
-      return typeof ruta === "string" ? ruta : null;
+      const datos = respuesta.notification.request.content.data;
+      if (typeof datos?.ruta === "string") return datos.ruta;
+      if (datos?.tipo === "evento-estado" && typeof datos.eventoId === "string") return `/evento/${datos.eventoId}`;
+      return null;
     };
 
     const ultima = Notifications.getLastNotificationResponse();

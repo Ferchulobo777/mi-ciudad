@@ -28,3 +28,21 @@ export function guardarUltimoEmail(email: string): Promise<void> {
 export function leerUltimoEmail(): Promise<string | null> {
   return SecureStore.getItemAsync(CLAVE_ULTIMO_EMAIL);
 }
+
+// Copia del último token emitido, que sobrevive al cierre de sesión. Es la
+// credencial del reingreso con huella: la API no tiene refresh token, y sin
+// esto la biometría no tendría nada que presentarle. Va en el llavero cifrado,
+// igual que el token de la sesión activa.
+const CLAVE_TOKEN_BIOMETRIA = "mi-ciudad.token-biometria";
+
+export function guardarTokenParaBiometria(token: string): Promise<void> {
+  return SecureStore.setItemAsync(CLAVE_TOKEN_BIOMETRIA, token);
+}
+
+export function leerTokenParaBiometria(): Promise<string | null> {
+  return SecureStore.getItemAsync(CLAVE_TOKEN_BIOMETRIA);
+}
+
+export function borrarTokenParaBiometria(): Promise<void> {
+  return SecureStore.deleteItemAsync(CLAVE_TOKEN_BIOMETRIA);
+}

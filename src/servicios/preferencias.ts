@@ -1,5 +1,5 @@
 import { Storage } from "expo-sqlite/kv-store";
-import type { Preferencias } from "@/tipos";
+import type { Preferencias, Usuario } from "@/tipos";
 import { registroVacio, type RegistroDeAvisos } from "@/utils/proximidad";
 
 // kv-store es la variante liviana de expo-sqlite pensada justo para esto: una
@@ -78,6 +78,29 @@ export function leerCategoriasFavoritas(usuarioId: string): string[] {
 
 export function guardarCategoriasFavoritas(usuarioId: string, categorias: string[]): void {
   Storage.setItemSync(claveCategoriasFavoritas(usuarioId), JSON.stringify(categorias));
+}
+
+// Última copia del usuario que devolvió la API. Sirve para arrancar la app sin
+// señal con la sesión guardada: sin esto, GET /yo fallaría y la app parecería
+// haber cerrado la sesión justo donde más se la necesita (El Palmar).
+const CLAVE_USUARIO = "sesion:usuario";
+
+export function guardarUsuarioEnCache(usuario: Usuario): void {
+  Storage.setItemSync(CLAVE_USUARIO, JSON.stringify(usuario));
+}
+
+export function leerUsuarioEnCache(): Usuario | null {
+  const valor = Storage.getItemSync(CLAVE_USUARIO);
+  if (!valor) return null;
+  try {
+    return JSON.parse(valor) as Usuario;
+  } catch {
+    return null;
+  }
+}
+
+export function borrarUsuarioEnCache(): void {
+  Storage.removeItemSync(CLAVE_USUARIO);
 }
 
 const CLAVE_REGISTRO_AVISOS = "proximidad:registro";

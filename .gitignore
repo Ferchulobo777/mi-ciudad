@@ -48,3 +48,4 @@ CLAUDE.md
 .agents/
 .mcp.json
 skills-lock.json
+google-services.json

@@ -1,8 +1,18 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Usuario } from "@/tipos";
-import { guardarToken, leerToken, borrarToken } from "@/servicios/sesion-almacenamiento";
-import { obtenerUsuarioActual } from "@/servicios/auth";
 import {
+  guardarToken,
+  leerToken,
+  borrarToken,
+  guardarTokenParaBiometria,
+} from "@/servicios/sesion-almacenamiento";
+import { obtenerUsuarioActual, actualizarPreferenciasEnCuenta } from "@/servicios/auth";
+import { establecerTokenDeApi } from "@/servicios/api";
+import { darDeBajaDispositivoPush, registrarDispositivoPush } from "@/servicios/push";
+import {
+  guardarUsuarioEnCache,
+  leerUsuarioEnCache,
+  borrarUsuarioEnCache,
   leerTema,
   guardarTema,
   leerAvatar,
@@ -57,19 +67,31 @@ export function SesionProvider({ children }: { children: ReactNode }) {
         return;
       }
       // El token por sí solo no alcanza para saber quién sos: hay que
-      // reconstruir el usuario (las pantallas deciden si hay sesión mirando
-      // `usuario`, no el token crudo). Si el token ya no corresponde a
-      // ningún usuario, se descarta en vez de dejar una sesión a medias.
-      const usuarioRecuperado = await obtenerUsuarioActual(tokenGuardado);
+      // reconstruir el usuario con GET /yo (las pantallas deciden si hay
+      // sesión mirando `usuario`, no el token crudo). Si la API dice que el
+      // token venció, se descarta; si lo que falla es la red, se arranca con
+      // la última copia del usuario y la sesión sigue.
+      let usuarioRecuperado: Usuario | null;
+      try {
+        usuarioRecuperado = await obtenerUsuarioActual(tokenGuardado);
+        if (usuarioRecuperado) guardarUsuarioEnCache(usuarioRecuperado);
+      } catch {
+        usuarioRecuperado = leerUsuarioEnCache();
+      }
       if (usuarioRecuperado) {
         const avatarGuardado = leerAvatar(usuarioRecuperado.id);
+        establecerTokenDeApi(tokenGuardado);
         setToken(tokenGuardado);
         setUsuario(avatarGuardado ? { ...usuarioRecuperado, avatarUrl: avatarGuardado } : usuarioRecuperado);
         setTemaPreferencia(leerTema(usuarioRecuperado.id));
         setProximidad(leerPreferenciaProximidad(usuarioRecuperado.id));
         setCategoriasFavoritas(leerCategoriasFavoritas(usuarioRecuperado.id));
+        // Se vuelve a registrar en cada inicio: el token de Expo puede cambiar
+        // (al reinstalar la app, por ejemplo) y el POST es idempotente.
+        registrarDispositivoPush();
       } else {
         await borrarToken();
+        borrarUsuarioEnCache();
       }
       setEstaListo(true);
     });
@@ -77,16 +99,23 @@ export function SesionProvider({ children }: { children: ReactNode }) {
 
   const iniciar = async (nuevoToken: string, nuevoUsuario: Usuario) => {
     await guardarToken(nuevoToken);
+    await guardarTokenParaBiometria(nuevoToken);
+    guardarUsuarioEnCache(nuevoUsuario);
+    establecerTokenDeApi(nuevoToken);
     const avatarGuardado = leerAvatar(nuevoUsuario.id);
     setToken(nuevoToken);
     setUsuario(avatarGuardado ? { ...nuevoUsuario, avatarUrl: avatarGuardado } : nuevoUsuario);
     setTemaPreferencia(leerTema(nuevoUsuario.id));
     setProximidad(leerPreferenciaProximidad(nuevoUsuario.id));
     setCategoriasFavoritas(leerCategoriasFavoritas(nuevoUsuario.id));
+    registrarDispositivoPush();
   };
 
   const cerrar = async () => {
+    await darDeBajaDispositivoPush();
     await borrarToken();
+    borrarUsuarioEnCache();
+    establecerTokenDeApi(null);
     setToken(null);
     setUsuario(null);
     setTemaPreferencia("sistema");
@@ -97,7 +126,10 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const cambiarTema = useCallback(
     (tema: PreferenciaTema) => {
       setTemaPreferencia(tema);
-      if (usuario) guardarTema(usuario.id, tema);
+      if (usuario) {
+        guardarTema(usuario.id, tema);
+        actualizarPreferenciasEnCuenta({ tema });
+      }
     },
     [usuario],
   );
@@ -105,7 +137,13 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const cambiarProximidad = useCallback(
     (preferencia: PreferenciaProximidad) => {
       setProximidad(preferencia);
-      if (usuario) guardarPreferenciaProximidad(usuario.id, preferencia);
+      if (usuario) {
+        guardarPreferenciaProximidad(usuario.id, preferencia);
+        actualizarPreferenciasEnCuenta({
+          avisarProximidad: preferencia.activo,
+          radioAvisoMetros: preferencia.radioMetros,
+        });
+      }
     },
     [usuario],
   );
@@ -113,7 +151,10 @@ export function SesionProvider({ children }: { children: ReactNode }) {
   const cambiarCategoriasFavoritas = useCallback(
     (categorias: string[]) => {
       setCategoriasFavoritas(categorias);
-      if (usuario) guardarCategoriasFavoritas(usuario.id, categorias);
+      if (usuario) {
+        guardarCategoriasFavoritas(usuario.id, categorias);
+        actualizarPreferenciasEnCuenta({ categoriasFavoritas: categorias });
+      }
     },
     [usuario],
   );

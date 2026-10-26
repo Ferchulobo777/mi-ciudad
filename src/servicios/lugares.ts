@@ -1,21 +1,23 @@
 import type { Categoria, Lugar } from "@/tipos";
-import { categoriasSimuladas } from "@/mocks/categorias";
-import { lugaresSimulados } from "@/mocks/lugares";
-import { envolverLista, simularPedido } from "./api";
+import { pedirApi } from "./api";
 import { conRespaldoEnCache } from "./cache";
 
-// Única puerta de entrada a los lugares y categorías: ninguna pantalla
-// importa los mocks directamente (regla del PRD). Hoy cada función simula un
-// GET a la API; cuando la cátedra publique la real, lo único que cambia es el
-// cuerpo de pedirLugares/pedirCategorias por un fetch.
+// Única puerta de entrada a los lugares y categorías: ninguna pantalla habla
+// con la API directamente (regla del PRD).
+//
+// El catálogo se baja entero en un solo pedido (la API admite hasta 500 por
+// página) y se guarda en la caché local: es lo que permite seguir viendo los
+// lugares dentro de El Palmar, sin señal. Por eso el filtrado y la búsqueda se
+// hacen acá y no con los parámetros de GET /lugares, que exigirían red en
+// cada búsqueda. El actualizadoDesde con una fecha muy vieja es lo que indica
+// la cátedra para que también vengan los lugares dados de baja; se descartan
+// más abajo con el campo activo.
 async function pedirLugares(): Promise<Lugar[]> {
-  const respuesta = await simularPedido(envolverLista(lugaresSimulados));
-  return respuesta.datos;
+  return pedirApi<Lugar[]>("/lugares?porPagina=500&actualizadoDesde=2000-01-01T00:00:00-03:00");
 }
 
 async function pedirCategorias(): Promise<Categoria[]> {
-  const respuesta = await simularPedido(envolverLista(categoriasSimuladas));
-  return respuesta.datos;
+  return pedirApi<Categoria[]>("/categorias?porPagina=100");
 }
 
 async function obtenerCatalogoCompleto(): Promise<Lugar[]> {

@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, useColorScheme, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { WebView } from "react-native-webview";
 import { router, useLocalSearchParams } from "expo-router";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import type { Lugar } from "@/tipos";
@@ -12,15 +11,11 @@ import { useUbicacion } from "@/hooks/use-ubicacion";
 import { useHayConexion } from "@/hooks/use-conexion";
 import { ChipsCategorias } from "@/components/chips-categorias";
 import { EstadoError } from "@/components/estado-error";
+import { MapaLugares } from "@/components/mapa-lugares";
 import { listarLugares } from "@/servicios/lugares";
 import { calcularRuta, type RutaCalculada } from "@/servicios/ruteo";
 import { formatearDistancia } from "@/utils/geo";
-import { construirHtmlMapa } from "@/utils/mapa-html";
-
-interface MensajeDelMapa {
-  tipo: "ver-lugar";
-  id: string;
-}
+import { hayMapaNativo } from "@/utils/mapa";
 
 function formatearDuracion(segundos: number): string {
   const minutos = Math.round(segundos / 60);
@@ -39,7 +34,7 @@ export default function Mapa() {
   const { categorias, porId: categoriaPorId } = useCategorias();
   const ubicacion = useUbicacion();
   const sinConexion = useHayConexion() === false;
-  const webviewRef = useRef<WebView>(null);
+  const conMapa = hayMapaNativo();
 
   const [lugares, setLugares] = useState<Lugar[]>([]);
   const [cargando, setCargando] = useState(true);
@@ -47,6 +42,7 @@ export default function Mapa() {
   const [categoria, setCategoria] = useState<string | null>(null);
   // undefined = todavía no se calculó, null = no hay ruta disponible.
   const [ruta, setRuta] = useState<RutaCalculada | null | undefined>(undefined);
+  const [pedidosDeCentrado, setPedidosDeCentrado] = useState(0);
 
   const cargar = useCallback(() => {
     listarLugares()
@@ -62,29 +58,6 @@ export default function Mapa() {
 
   const lugarDestacado = useMemo(() => lugares.find((l) => l.id === lugarId), [lugares, lugarId]);
 
-  // El HTML se genera una sola vez con los datos iniciales: actualizar la
-  // posición, el filtro o la ruta después no debería recargar el mapa (se
-  // perdería el zoom en curso), así que eso viaja como mensajes al WebView.
-  const htmlInicial = useMemo(
-    () =>
-      construirHtmlMapa({
-        lugares,
-        categoriaPorId,
-        posicion: ubicacion.posicion,
-        colorPrimario: tema.primario,
-        esOscuro,
-        lugarDestacadoId: lugarId,
-      }),
-    [lugares, categoriaPorId, esOscuro, lugarId], // eslint-disable-line react-hooks/exhaustive-deps
-  );
-
-  useEffect(() => {
-    if (!ubicacion.posicion) return;
-    webviewRef.current?.postMessage(
-      JSON.stringify({ tipo: "ubicar", lat: ubicacion.posicion.latitud, lon: ubicacion.posicion.longitud }),
-    );
-  }, [ubicacion.posicion]);
-
   // La ruta se pide recién con las dos puntas: la posición real del turista y
   // el lugar de destino. Sin permiso de ubicación el mapa igual muestra el
   // lugar destacado, solo que sin la línea.
@@ -94,37 +67,18 @@ export default function Mapa() {
     calcularRuta(ubicacion.posicion, lugarDestacado.coordenadas).then((resultado) => {
       if (!vigente) return;
       setRuta(resultado);
-      if (resultado) webviewRef.current?.postMessage(JSON.stringify({ tipo: "ruta", puntos: resultado.puntos }));
     });
     return () => {
       vigente = false;
     };
   }, [lugarDestacado, ubicacion.posicion]);
 
-  function filtrar(categoriaId: string | null) {
-    setCategoria(categoriaId);
-    webviewRef.current?.postMessage(JSON.stringify({ tipo: "filtrar", categoriaId }));
-  }
-
-  function manejarMensaje(evento: { nativeEvent: { data: string } }) {
-    try {
-      const mensaje = JSON.parse(evento.nativeEvent.data) as MensajeDelMapa;
-      if (mensaje.tipo === "ver-lugar") router.push({ pathname: "/lugar/[id]", params: { id: mensaje.id } });
-    } catch {
-      // Se ignoran mensajes que no tengan el formato esperado.
-    }
-  }
-
   function centrarEnMiUbicacion() {
     if (ubicacion.estado !== "concedida") {
       ubicacion.pedir();
       return;
     }
-    if (ubicacion.posicion) {
-      webviewRef.current?.postMessage(
-        JSON.stringify({ tipo: "ubicar", lat: ubicacion.posicion.latitud, lon: ubicacion.posicion.longitud, centrar: true }),
-      );
-    }
+    if (ubicacion.posicion) setPedidosDeCentrado((n) => n + 1);
     ubicacion.actualizar();
   }
 
@@ -132,24 +86,31 @@ export default function Mapa() {
 
   return (
     <View style={[styles.contenedor, { backgroundColor: tema.fondo }]}>
-      {!cargando && !error && !sinConexion && (
-        <WebView
-          ref={webviewRef}
-          originWhitelist={["*"]}
-          source={{ html: htmlInicial }}
-          onMessage={manejarMensaje}
-          style={styles.webview}
+      {!cargando && !error && !sinConexion && conMapa && (
+        <MapaLugares
+          centrarEnTurista={pedidosDeCentrado}
+          lugares={lugares}
+          categoriaPorId={categoriaPorId}
+          posicion={ubicacion.posicion}
+          colorPrimario={tema.primario}
+          esOscuro={esOscuro}
+          categoriaId={categoria}
+          lugarDestacadoId={lugarId}
+          ruta={ruta?.puntos}
+          alVerLugar={(id) => router.push({ pathname: "/lugar/[id]", params: { id } })}
         />
       )}
       {cargando && <ActivityIndicator style={styles.centro} color={tema.primario} />}
-      {/* Sin señal no se pueden bajar Leaflet ni las tiles: en vez de un mapa en
-          blanco se ofrece la lista de lugares, que sale de la copia guardada. */}
-      {!cargando && !error && sinConexion && (
+      {/* Sin señal el mapa no puede bajar las partes que no tiene guardadas, y un
+          build de Android sin clave de Google no puede dibujarlo: en los dos casos
+          se ofrece la lista de lugares, que sale de la copia guardada. */}
+      {!cargando && !error && (sinConexion || !conMapa) && (
         <View style={[styles.centro, styles.sinConexion]}>
           <Ionicons name="cloud-offline-outline" size={40} color={tema.textoSecundario} />
           <Text style={[styles.textoSinConexion, { color: tema.textoSecundario }]}>
-            El mapa necesita conexión a internet. Mientras tanto podés ver la lista de lugares, que está guardada en
-            tu teléfono.
+            {sinConexion
+              ? "El mapa necesita conexión a internet. Mientras tanto podés ver la lista de lugares, que está guardada en tu teléfono."
+              : "El mapa no está disponible en esta versión de la app. Podés ver la lista de lugares ordenada por distancia."}
           </Text>
           <Pressable
             onPress={() => router.replace("/catalogo")}
@@ -189,7 +150,7 @@ export default function Mapa() {
 
         {!lugarDestacado && (
           <View style={styles.filaChips} pointerEvents="box-none">
-            <ChipsCategorias categorias={categorias} seleccionada={categoria} alElegir={filtrar} />
+            <ChipsCategorias categorias={categorias} seleccionada={categoria} alElegir={setCategoria} />
           </View>
         )}
 
@@ -233,7 +194,6 @@ const sombra = {
 
 const styles = StyleSheet.create({
   contenedor: { flex: 1 },
-  webview: { flex: 1 },
   centro: { flex: 1, justifyContent: "center" },
   sinConexion: { alignItems: "center", gap: 14, paddingHorizontal: 32 },
   textoSinConexion: { fontSize: 16, textAlign: "center", lineHeight: 23 },

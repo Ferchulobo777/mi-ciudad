@@ -1,14 +1,30 @@
 import type { Evento } from "@/tipos";
-import { eventosSimulados } from "@/mocks/eventos";
 import { eventosVigentes } from "@/utils/fechas";
-import { envolverLista, simularPedido } from "./api";
+import { hayTokenDeApi, pedirApi } from "./api";
 import { conRespaldoEnCache } from "./cache";
 import { obtenerBaseDeDatos } from "./base-datos";
 import { programarRecordatorio, cancelarRecordatorio, notificarAhora } from "./notificaciones";
+import { registrarDispositivoPush } from "./push";
 
+// Sin filtros de día la API arranca la agenda en hoy, que es justo lo que
+// muestra la pantalla; 100 es el máximo por página que admite /eventos.
 async function pedirEventos(): Promise<Evento[]> {
-  const respuesta = await simularPedido(envolverLista(eventosSimulados));
-  return respuesta.datos;
+  return pedirApi<Evento[]>("/eventos?porPagina=100");
+}
+
+// Además del recordatorio local, el evento se guarda en la cuenta: así la API
+// sabe a quién avisar si Turismo lo suspende o lo cancela. Si no hay señal en
+// ese momento no se bloquea al turista; la copia local y el recordatorio ya
+// quedaron hechos.
+async function sincronizarGuardadoEnCuenta(eventoId: string, guardado: boolean): Promise<void> {
+  if (!hayTokenDeApi()) return;
+  try {
+    await pedirApi(`/yo/eventos-guardados/${encodeURIComponent(eventoId)}`, {
+      metodo: guardado ? "PUT" : "DELETE",
+    });
+  } catch {
+    // Se reintenta solo la próxima vez que el turista toque el botón.
+  }
 }
 
 async function obtenerTodos(): Promise<Evento[]> {
@@ -60,6 +76,7 @@ export async function alternarGuardadoConRecordatorio(
   if (existente) {
     if (existente.idNotificacion) await cancelarRecordatorio(existente.idNotificacion);
     await db.runAsync("DELETE FROM eventos_guardados WHERE id = ?", existente.id);
+    await sincronizarGuardadoEnCuenta(evento.id, false);
     return { guardado: false, conRecordatorio: false };
   }
 
@@ -72,6 +89,11 @@ export async function alternarGuardadoConRecordatorio(
     idNotificacion,
     new Date().toISOString(),
   );
+  await sincronizarGuardadoEnCuenta(evento.id, true);
+  // Guardar un evento es el momento en que se pide el permiso de avisos: si
+  // se concedió, se registra el teléfono para recibir la push si el evento
+  // se suspende o se cancela.
+  if (idNotificacion !== null) registrarDispositivoPush();
   return { guardado: true, conRecordatorio: idNotificacion !== null };
 }
 

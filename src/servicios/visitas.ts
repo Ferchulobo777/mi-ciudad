@@ -1,6 +1,6 @@
 import type { NuevaVisita, OrigenVisita, Visita } from "@/tipos";
 import { obtenerBaseDeDatos } from "./base-datos";
-import { hayInternet, simularPedido } from "./api";
+import { ErrorDeApi, hayInternet, hayTokenDeApi, pedirApi, subirArchivo } from "./api";
 
 interface FilaVisita {
   id: string;
@@ -61,7 +61,34 @@ export async function registrarVisita(usuarioId: string, nueva: NuevaVisita): Pr
   return { id, usuarioId, sincronizada: false, ...nueva };
 }
 
+// Las visitas que la cuenta ya tiene en el servidor (por ejemplo, registradas
+// desde otro teléfono) se suman a la tabla local como sincronizadas. Las que
+// solo existen acá no se tocan: siguen en la cola hasta que se suban.
+async function traerVisitasDeLaCuenta(usuarioId: string): Promise<void> {
+  if (!hayTokenDeApi()) return;
+  let remotas: Visita[];
+  try {
+    remotas = await pedirApi<Visita[]>("/yo/visitas?porPagina=500");
+  } catch {
+    return;
+  }
+  const db = await obtenerBaseDeDatos();
+  for (const visita of remotas) {
+    await db.runAsync(
+      "INSERT OR IGNORE INTO visitas (id, usuarioId, lugarId, fechaHora, origen, fotoUri, nota, sincronizada) VALUES (?, ?, ?, ?, ?, ?, ?, 1)",
+      visita.id,
+      usuarioId,
+      visita.lugarId,
+      visita.fechaHora,
+      visita.origen,
+      visita.fotoUri,
+      visita.nota,
+    );
+  }
+}
+
 export async function listarVisitas(usuarioId: string): Promise<Visita[]> {
+  await traerVisitasDeLaCuenta(usuarioId);
   const db = await obtenerBaseDeDatos();
   const filas = await db.getAllAsync<FilaVisita>(
     "SELECT * FROM visitas WHERE usuarioId = ? ORDER BY fechaHora DESC",
@@ -79,10 +106,29 @@ export async function contarVisitasPendientes(usuarioId: string): Promise<number
   return fila?.cantidad ?? 0;
 }
 
-// Simula el POST /visitas. Con la API real, acá va el fetch con el token en
-// Authorization: Bearer y la subida de la foto.
+function esArchivoLocal(uri: string): boolean {
+  return !/^https?:\/\//i.test(uri);
+}
+
+// La foto se sube antes que la visita porque la API solo acepta la url que
+// devuelve POST /archivos, nunca un file:// del teléfono. El id es el mismo
+// que se generó al guardarla sin señal: POST /yo/visitas es idempotente por
+// id, así que si se corta la conexión después de subirla y se reintenta, no
+// queda una visita duplicada.
 async function subirVisita(visita: Visita): Promise<void> {
-  await simularPedido(visita, 300);
+  const fotoUri = visita.fotoUri && esArchivoLocal(visita.fotoUri) ? (await subirArchivo(visita.fotoUri)).url : visita.fotoUri;
+
+  await pedirApi("/yo/visitas", {
+    metodo: "POST",
+    cuerpo: {
+      id: visita.id,
+      lugarId: visita.lugarId,
+      fechaHora: visita.fechaHora,
+      origen: visita.origen,
+      fotoUri,
+      nota: visita.nota,
+    },
+  });
 }
 
 let sincronizacionEnCurso: Promise<number> | null = null;
@@ -97,7 +143,8 @@ export function sincronizarVisitasPendientes(usuarioId: string): Promise<number>
   if (sincronizacionEnCurso) return sincronizacionEnCurso;
 
   sincronizacionEnCurso = (async () => {
-    if (!(await hayInternet())) return 0;
+    // Sin sesión no hay a qué cuenta subirlas: quedan en la cola.
+    if (!hayTokenDeApi() || !(await hayInternet())) return 0;
     const db = await obtenerBaseDeDatos();
     const pendientes = await db.getAllAsync<FilaVisita>(
       "SELECT * FROM visitas WHERE usuarioId = ? AND sincronizada = 0 ORDER BY fechaHora ASC",
@@ -108,8 +155,13 @@ export function sincronizarVisitasPendientes(usuarioId: string): Promise<number>
     for (const fila of pendientes) {
       try {
         await subirVisita(filaAVisita(fila));
-      } catch {
-        break; // Se cortó la señal a mitad de camino: el resto queda para la próxima.
+      } catch (error) {
+        // Un rechazo por los datos (4xx) es propio de esa visita: se saltea
+        // para que no frene a las demás. Cualquier otro error es de red o del
+        // servidor, y entonces el resto queda para la próxima.
+        const estado = error instanceof ErrorDeApi ? error.estadoHttp : null;
+        if (estado !== null && estado >= 400 && estado < 500 && estado !== 401) continue;
+        break;
       }
       await db.runAsync("UPDATE visitas SET sincronizada = 1 WHERE id = ?", fila.id);
       subidas++;

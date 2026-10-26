@@ -1,92 +1,91 @@
-import type { RespuestaSesion, Usuario } from "@/tipos";
-import { usuariosSimulados } from "@/mocks/usuarios";
+import type { Preferencias, RespuestaSesion, Usuario } from "@/tipos";
+import { ErrorDeApi, pedirApi } from "./api";
+import { leerTokenParaBiometria } from "./sesion-almacenamiento";
 
-// Códigos alineados con la convención de error de la cátedra: { error: { codigo, mensaje } }.
-export type CodigoErrorAuth = "CREDENCIALES_INVALIDAS" | "EMAIL_YA_REGISTRADO";
-
+// El código es el que manda la API (CREDENCIALES_INVALIDAS,
+// EMAIL_YA_REGISTRADO, SIN_CONEXION...) y el mensaje está pensado para
+// mostrarse tal cual, así que las pantallas no necesitan traducir nada.
 export class ErrorDeAutenticacion extends Error {
-  codigo: CodigoErrorAuth;
-  constructor(codigo: CodigoErrorAuth, mensaje: string) {
+  codigo: string;
+  constructor(codigo: string, mensaje: string) {
     super(mensaje);
     this.codigo = codigo;
   }
 }
 
-// Los servicios son asincrónicos desde el día uno, aunque el dato simulado
-// responda al instante: así el reemplazo por la llamada real a la API, cuando
-// exista, no obliga a tocar ninguna pantalla que ya consuma este servicio.
-function simularLatenciaDeRed<T>(valor: T, ms = 500): Promise<T> {
-  return new Promise((resolver) => setTimeout(() => resolver(valor), ms));
-}
-
-function generarTokenSimulado(usuarioId: string): string {
-  return `token-simulado.${usuarioId}.${Date.now()}`;
+function comoErrorDeAutenticacion(error: unknown): never {
+  if (error instanceof ErrorDeApi) throw new ErrorDeAutenticacion(error.codigo, error.message);
+  throw error;
 }
 
 export async function iniciarSesion(email: string, contrasena: string): Promise<RespuestaSesion> {
-  await simularLatenciaDeRed(null);
-  const emailNormalizado = email.trim().toLowerCase();
-  const encontrado = usuariosSimulados.find((u) => u.usuario.email.toLowerCase() === emailNormalizado);
-
-  if (!encontrado || encontrado.contrasena !== contrasena) {
-    throw new ErrorDeAutenticacion("CREDENCIALES_INVALIDAS", "El correo o la contraseña no coinciden.");
+  try {
+    return await pedirApi<RespuestaSesion>("/auth/ingreso", {
+      metodo: "POST",
+      cuerpo: { email: email.trim().toLowerCase(), contrasena },
+      token: null,
+    });
+  } catch (error) {
+    return comoErrorDeAutenticacion(error);
   }
-
-  return { token: generarTokenSimulado(encontrado.usuario.id), usuario: encontrado.usuario };
-}
-
-export async function reingresarConBiometria(email: string): Promise<RespuestaSesion> {
-  // La huella o el rostro ya confirmaron la identidad del lado del sistema
-  // operativo; acá solo falta reconstruir la sesión. Contra la API real esto
-  // canjearía un refresh token guardado en vez de volver a buscar por email,
-  // pero el contrato todavía no define ese endpoint (ver openapi.yaml), así que
-  // por ahora se simula devolviendo la sesión del mismo usuario de prueba.
-  await simularLatenciaDeRed(null);
-  const emailNormalizado = email.trim().toLowerCase();
-  const encontrado = usuariosSimulados.find((u) => u.usuario.email.toLowerCase() === emailNormalizado);
-
-  if (!encontrado) {
-    throw new ErrorDeAutenticacion("CREDENCIALES_INVALIDAS", "No se encontró una cuenta para reingresar.");
-  }
-
-  return { token: generarTokenSimulado(encontrado.usuario.id), usuario: encontrado.usuario };
-}
-
-// Reconstruye el usuario a partir de un token guardado del arranque anterior
-// (RF03: la sesión sobrevive a cerrar la app). El token simulado lleva el id
-// del usuario adentro; contra la API real esto sería un GET /me que devuelve
-// el usuario dueño del token, sin necesitar volver a pedir el email.
-export async function obtenerUsuarioActual(token: string): Promise<Usuario | null> {
-  await simularLatenciaDeRed(null);
-  const [, usuarioId] = token.split(".");
-  return usuariosSimulados.find((u) => u.usuario.id === usuarioId)?.usuario ?? null;
 }
 
 export async function registrarCuenta(nombre: string, email: string, contrasena: string): Promise<RespuestaSesion> {
-  await simularLatenciaDeRed(null);
-  const emailNormalizado = email.trim().toLowerCase();
+  try {
+    return await pedirApi<RespuestaSesion>("/auth/registro", {
+      metodo: "POST",
+      cuerpo: { nombre: nombre.trim(), email: email.trim().toLowerCase(), contrasena },
+      token: null,
+    });
+  } catch (error) {
+    return comoErrorDeAutenticacion(error);
+  }
+}
 
-  if (usuariosSimulados.some((u) => u.usuario.email.toLowerCase() === emailNormalizado)) {
-    throw new ErrorDeAutenticacion("EMAIL_YA_REGISTRADO", "Ya existe una cuenta con ese correo.");
+/**
+ * Reconstruye el usuario dueño de un token guardado (RF03: la sesión
+ * sobrevive a cerrar la app). Devuelve null solo cuando la API dice que el
+ * token ya no sirve (401: venció o es inválido); sin conexión el error sube,
+ * para que quien llama no confunda "no hay señal" con "la sesión terminó".
+ */
+export async function obtenerUsuarioActual(token: string): Promise<Usuario | null> {
+  try {
+    return await pedirApi<Usuario>("/yo", { token });
+  } catch (error) {
+    if (error instanceof ErrorDeApi && error.estadoHttp === 401) return null;
+    throw error;
+  }
+}
+
+/**
+ * La huella o el rostro ya confirmaron la identidad del lado del sistema
+ * operativo; falta una credencial para la API. La API no tiene refresh token,
+ * así que se reutiliza el último token emitido (dura 30 días), guardado en
+ * expo-secure-store y que solo se libera después de la biometría. Si venció,
+ * hay que volver a ingresar con contraseña.
+ */
+export async function reingresarConBiometria(email: string): Promise<RespuestaSesion> {
+  const token = await leerTokenParaBiometria();
+  if (!token) {
+    throw new ErrorDeAutenticacion("CREDENCIALES_INVALIDAS", "No se encontró una cuenta para reingresar.");
   }
 
-  const nuevoUsuario = {
-    contrasena,
-    usuario: {
-      id: `u${usuariosSimulados.length + 1}`,
-      nombre: nombre.trim(),
-      email: emailNormalizado,
-      avatarUrl: null,
-      creadoEn: new Date().toISOString(),
-      preferencias: {
-        categoriasFavoritas: [],
-        avisarProximidad: true,
-        radioAvisoMetros: 250 as const,
-        tema: "sistema" as const,
-      },
-    },
-  };
-  usuariosSimulados.push(nuevoUsuario);
+  const usuario = await obtenerUsuarioActual(token);
+  if (!usuario || usuario.email.toLowerCase() !== email.trim().toLowerCase()) {
+    throw new ErrorDeAutenticacion("CREDENCIALES_INVALIDAS", "Tu sesión venció. Ingresá con tu contraseña.");
+  }
+  return { token, usuario };
+}
 
-  return { token: generarTokenSimulado(nuevoUsuario.usuario.id), usuario: nuevoUsuario.usuario };
+/**
+ * PATCH /yo mezcla las preferencias campo a campo, así que alcanza con mandar
+ * la que cambió. Las preferencias se guardan primero en el teléfono; esto solo
+ * las copia a la cuenta y no bloquea a la pantalla si no hay señal.
+ */
+export async function actualizarPreferenciasEnCuenta(cambios: Partial<Preferencias>): Promise<void> {
+  try {
+    await pedirApi<Usuario>("/yo", { metodo: "PATCH", cuerpo: { preferencias: cambios } });
+  } catch {
+    // Quedan guardadas localmente; la próxima modificación con señal las vuelve a mandar.
+  }
 }

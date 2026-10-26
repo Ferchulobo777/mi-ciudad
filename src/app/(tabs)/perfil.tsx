@@ -23,6 +23,7 @@ import { FormularioLogin } from "@/components/formulario-login";
 import { elegirFotoDeGaleria, sacarFotoDePerfil } from "@/servicios/foto-perfil";
 import { listarFavoritos } from "@/servicios/favoritos";
 import { pedirPermisoDeNotificaciones } from "@/servicios/notificaciones";
+import { probarPush, registrarDispositivoPush } from "@/servicios/push";
 import { consultarPermisoDeUbicacion, pedirPermisoDeUbicacion } from "@/servicios/ubicacion";
 import type { PreferenciaTema, RadioAviso } from "@/servicios/preferencias";
 
@@ -119,6 +120,32 @@ export default function MiPerfil() {
       return;
     }
     cambiarProximidad({ ...proximidad, activo: true });
+  }
+
+  // Pide el permiso (en contexto: el turista tocó "probar"), registra el
+  // teléfono en la API y le pide al servidor una push de prueba.
+  async function probarNotificacionesPush() {
+    if (!(await pedirPermisoDeNotificaciones())) {
+      Alert.alert("Notificaciones desactivadas", "Habilitá las notificaciones de Mi Ciudad desde los ajustes del teléfono.", [
+        { text: "Ahora no", style: "cancel" },
+        { text: "Abrir ajustes", onPress: () => Linking.openSettings() },
+      ]);
+      return;
+    }
+    const tokenExpo = await registrarDispositivoPush();
+    if (!tokenExpo) {
+      Alert.alert(
+        "Push no disponible",
+        "Este teléfono no pudo registrarse para recibir avisos del servidor. Las push necesitan la app instalada (no Expo Go en Android) y conexión a internet.",
+      );
+      return;
+    }
+    try {
+      const enviadas = await probarPush();
+      Alert.alert("Listo", enviadas > 0 ? "En unos segundos te llega una notificación de prueba." : "No hay teléfonos registrados en tu cuenta.");
+    } catch {
+      Alert.alert("No se pudo enviar", "El servidor no respondió. Probá de nuevo en un rato.");
+    }
   }
 
   if (!usuario) {
@@ -224,6 +251,14 @@ export default function MiPerfil() {
               </View>
             </>
           )}
+
+          <View style={[styles.separador, { backgroundColor: tema.borde }]} />
+
+          <Pressable style={styles.fila} onPress={probarNotificacionesPush} accessibilityRole="button">
+            <Ionicons name="notifications-outline" size={20} color={tema.primario} />
+            <Text style={[styles.filaTexto, { color: tema.textoPrincipal }]}>Probar notificaciones push</Text>
+            <Ionicons name="chevron-forward" size={18} color={tema.textoSecundario} />
+          </Pressable>
 
           <View style={[styles.separador, { backgroundColor: tema.borde }]} />
 
