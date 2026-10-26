@@ -107,6 +107,14 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "mapaNativo": false,
+      "router": {},
+      "eas": {
+        "projectId": "d115fc19-29bc-496b-b578-1ecaa5cb3788"
+      }
+    },
+    "owner": "ferchulobo777"
   }
 }
