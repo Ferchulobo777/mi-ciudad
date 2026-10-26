@@ -20,7 +20,7 @@ seguir funcionando sin conexión (el caso de referencia es el Parque Nacional El
 
 ## Instalar la app
 
-APK de Android: **https://expo.dev/artifacts/eas/23HqpJ_F12dqSp6o_8ChCWCDbyET5m8JIlbgR9jB2eM.apk**
+APK de Android: **https://expo.dev/artifacts/eas/QDJaO3Cv7D1nBY1i_HE3rBNPpzBVZ6IPOL545NrWFm8.apk**
 
 Abrir el link desde el teléfono, descargar e instalar (Android pide permitir la instalación de
 apps de origen desconocido). La app usa la API publicada en `https://api-mi-ciudad-ex12.onrender.com`;

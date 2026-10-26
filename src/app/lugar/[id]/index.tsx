@@ -101,7 +101,7 @@ export default function DetalleLugar() {
   return (
     <View style={{ flex: 1, backgroundColor: tema.fondo }}>
       <View style={styles.foto}>
-        <ImagenLugar categoria={categoria} tamañoIcono={64} style={StyleSheet.absoluteFill} />
+        <ImagenLugar categoria={categoria} uri={lugar.imagenes[0]} tamañoIcono={64} style={StyleSheet.absoluteFill} />
         <SafeAreaView edges={["top"]} style={styles.filaSuperior}>
           <BotonIcono nombre="chevron-back" etiqueta="Volver" onPress={() => router.back()} />
           <BotonIcono

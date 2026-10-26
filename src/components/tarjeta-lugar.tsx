@@ -47,7 +47,7 @@ export function TarjetaLugar({ lugar, categoria, distanciaEnMetros, onPress, esF
         pressed && { opacity: 0.8 },
       ]}
     >
-      <ImagenLugar categoria={categoria} tamañoIcono={20} style={styles.miniatura} />
+      <ImagenLugar categoria={categoria} uri={lugar.imagenes[0]} tamañoIcono={20} style={styles.miniatura} />
       <View style={styles.info}>
         <Text style={[styles.nombre, { color: tema.textoPrincipal }]} numberOfLines={1}>
           {lugar.nombre}

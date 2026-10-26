@@ -127,7 +127,7 @@ export default function MiRecorrido() {
                 {item.fotoUri ? (
                   <Image source={{ uri: item.fotoUri }} style={styles.miniatura} contentFit="cover" transition={150} />
                 ) : (
-                  <ImagenLugar categoria={categoria} tamañoIcono={20} style={styles.miniatura} />
+                  <ImagenLugar categoria={categoria} uri={lugar?.imagenes[0]} tamañoIcono={20} style={styles.miniatura} />
                 )}
                 <View style={{ flex: 1 }}>
                   <View style={styles.filaNombre}>
