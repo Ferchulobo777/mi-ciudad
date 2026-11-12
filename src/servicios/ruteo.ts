@@ -1,9 +1,8 @@
 import type { Posicion } from "@/servicios/ubicacion";
 
 // OSRM (Open Source Routing Machine) tiene un servidor de demostración público
-// y gratuito, sin API key ni cuenta de facturación: mismo criterio que los
-// tiles de OpenStreetMap del mapa. Al ser un servidor de la comunidad pensado
-// para pruebas, no hay garantía de disponibilidad — por eso cualquier falla
+// y gratuito, sin API key ni cuenta de facturación. Al ser un servidor de la
+// comunidad pensado para pruebas, no hay garantía de disponibilidad: por eso cualquier falla
 // se traduce en `null` en vez de una excepción, y la pantalla sigue mostrando
 // el mapa sin la línea de ruta en ese caso.
 const URL_BASE_OSRM = "https://router.project-osrm.org/route/v1/foot";

@@ -1,18 +1,18 @@
 openapi: 3.0.3
 info:
-  title: Mi Ciudad — API (contrato preliminar)
+  title: Mi Ciudad, API (contrato preliminar)
   version: 0.1.0
   description: >
     Contrato preliminar, escrito a partir del PRD de la propuesta "Mi Ciudad,
-    guía turística de Colón". La API real la provee la cátedra y todavía no
-    está disponible. Este documento fija la forma exacta de cada recurso para
-    que el equipo pueda construir la capa de servicios (src/servicios/) contra
-    datos simulados (src/mocks/) sin tener que reescribirla cuando la API real
-    llegue. Se reemplaza o se ajusta en cuanto la cátedra publique su propia
-    especificación.
+    guía turística de Colón" antes de que la cátedra publicara su API. Sirvió
+    para construir la capa de servicios (src/servicios/) y los tipos
+    (src/tipos/) desde el principio. La app consume hoy la API de la cátedra
+    (api-mi-ciudad), cuya especificación completa está en /docs de la API
+    publicada; los recursos y la envoltura { datos, meta } coinciden con este
+    contrato.
 servers:
-  - url: https://api.colon.tur.ar
-    description: Placeholder. La URL real la define la cátedra.
+  - url: https://api-mi-ciudad-ex12.onrender.com
+    description: API de la cátedra publicada por el grupo en Render.
 
 security:
   - bearerAuth: []

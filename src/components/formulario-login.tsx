@@ -21,9 +21,8 @@ interface Props {
   esModal?: boolean;
 }
 
-// Formulario compartido entre la pantalla de Login y la pestaña Mi perfil: se mostraba
-// en dos lugares con la misma lógica duplicada, y una pantalla intermedia de
-// "todavía no ingresaste" antes de llegar acá que no sumaba nada.
+// Formulario compartido entre la pantalla de Login y la pestaña Mi perfil: así la
+// validación, el reingreso con huella y el envío viven en un solo lugar.
 export function FormularioLogin({ onExito, esModal = false }: Props) {
   const tema = useTema();
   const sesion = useSesion();

@@ -220,6 +220,7 @@ const recomendación = [
 
 const doc = new Document({
   creator: "Fernando Rodriguez",
+  lastModifiedBy: "Fernando Rodriguez",
   title: "Propuestas de Desarrollo, Trabajo Integrador de Desarrollo para Móviles",
   styles: { default: { document: { run: { font: "Calibri", size: 22 } } } },
   sections: [

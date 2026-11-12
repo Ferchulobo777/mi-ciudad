@@ -1,7 +1,7 @@
 import type { Lugar } from "@/tipos";
 
-// Coordenadas reales de Colón, Entre Ríos, con pequeños corrimientos entre sí
-// para que el mapa no muestre todos los pines apilados.
+// Datos de prueba para los tests de la capa de servicios. Coordenadas reales de
+// Colón, Entre Ríos, con pequeños corrimientos para que no queden superpuestos.
 export const lugaresSimulados: Lugar[] = [
   {
     id: "lugar-termas-colon",

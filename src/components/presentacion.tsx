@@ -3,8 +3,8 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@react-native-vector-icons/ionicons";
 import { Colores } from "@/constants/tema";
 
-// Misma composición que Mockups-Propuestas/MiCiudad-Splash.dc.html: degradé
-// Azul Río → Verde Palmar y un ícono de pin de ubicación. La curva de olas del
+// Misma composición que el mockup de la presentación
+// (Mockups-Propuestas/exports/MiCiudad-Splash.png): degradé Azul Río → Verde Palmar y un ícono de pin de ubicación. La curva de olas del
 // mockup se resuelve acá con óvalos superpuestos en vez de un path de SVG:
 // react-native-svg 15.15.4 tiene un archivo interno (fabric/FeCompositeNativeComponent)
 // que Metro no logra resolver contra Expo SDK 57, así que se evita esa

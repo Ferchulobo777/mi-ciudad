@@ -26,7 +26,7 @@ const consigna = [
   h2("Formato de entrega"),
   p("El trabajo es grupal, con los mismos integrantes declarados por el equipo. La entrega incluye el enlace de un build de release generado con el perfil preview de EAS, instalable y usable sin depender de Metro ni de la computadora de ningún integrante, junto con el código fuente en un repositorio Git o un archivo comprimido. El código fuente debe incluir los archivos eas.json y app.json, y excluir la carpeta node_modules."),
   h2("Defensa oral"),
-  p("La entrega incluye una defensa oral obligatoria, grupal, de quince a veinte minutos, en la fecha que informe la cátedra. Se demuestra la aplicación funcionando en un teléfono, con Expo Go o con el build entregado, y cada integrante explica la parte que desarrolló y responde preguntas sobre su código. El uso de asistentes de inteligencia artificial está permitido durante el desarrollo, pero no durante la defensa: lo que se evalúa es que el equipo pueda explicar cada línea de lo que entrega. Sin defensa no hay integrador aprobado, aunque la entrega esté completa."),
+  p("La entrega incluye una defensa oral obligatoria, grupal, de quince a veinte minutos, en la fecha que informe la cátedra. Se demuestra la aplicación funcionando en un teléfono, con Expo Go o con el build entregado, y cada integrante explica la parte que desarrolló y responde preguntas sobre su código. Lo que se evalúa es que el equipo pueda explicar cada línea de lo que entrega. Sin defensa no hay integrador aprobado, aunque la entrega esté completa."),
   h2("Requisitos mínimos de la aplicación"),
   p("Los siguientes diez puntos se verifican sobre la aplicación entregada. No son ejemplos ni sugerencias, sino condiciones de aprobación."),
   table(
@@ -89,8 +89,8 @@ const especificación = [
     [
       ["Cámara", "expo-camera", "Foto de la visita y lectura del código QR del cartel de cada lugar"],
       ["Galería", "expo-image-picker", "Elegir una foto ya sacada en vez de sacar una nueva"],
-      ["Ubicación y mapa", "expo-location, react-native-webview con Leaflet y OpenStreetMap", "Mapa de lugares con filtro por categoría, cálculo de distancia, ruta caminando y botón de cómo llegar"],
-      ["Notificaciones", "expo-notifications", "Aviso de proximidad a un lugar favorito o de una categoría favorita, recordatorio de un evento guardado y aviso de evento suspendido"],
+      ["Ubicación y mapa", "expo-location, react-native-maps", "Mapa de lugares con filtro por categoría, cálculo de distancia, ruta caminando y botón de cómo llegar"],
+      ["Notificaciones", "expo-notifications", "Notificaciones locales: aviso de proximidad a un lugar favorito o de una categoría favorita y recordatorio de un evento guardado. Notificaciones push que manda la API cuando un evento guardado se suspende o se cancela"],
       ["Persistencia y red", "expo-sqlite, expo-sqlite kv-store, expo-network", "Catálogo y agenda cacheados para uso sin conexión y cola de visitas sin sincronizar con expo-sqlite; preferencias del usuario con kv-store; aviso del estado de la red"],
       ["Seguridad", "expo-secure-store, expo-local-authentication", "Token de sesión guardado y reingreso con huella o rostro"],
       ["Sensores y háptica", "expo-sensors, expo-haptics", "Flecha de dirección hacia un lugar con el magnetómetro, vibración al registrar una visita"],
@@ -100,15 +100,16 @@ const especificación = [
     [2000, 2800, 4200],
   ),
   spacer(),
-  p("Decisión sobre el mapa. La consigna nombra react-native-maps. En Expo Go esa librería funciona sin configuración, pero la build de release que se entrega necesita una clave propia de Google Maps, y para obtenerla Google exige una cuenta de facturación que no aceptó el medio de pago disponible del equipo. Sin esa clave el mapa del APK queda en blanco. Por eso el mapa se resolvió con Leaflet y las tiles libres de OpenStreetMap dentro de un WebView (react-native-webview, incluido en el SDK de Expo): no requiere clave, se ve igual en Expo Go y en el APK, y cumple las mismas funciones, con marcadores por categoría, posición del turista, filtro y ruta. La decisión se consulta con la cátedra antes de la entrega."),
+  p("Decisión sobre el mapa. El mapa usa react-native-maps, como pide la consigna: Google Maps en Android y Apple Maps en iOS. La build de Android necesita una clave propia de Google Maps; para no dejarla escrita en el repositorio, se carga como variable de entorno de EAS y el archivo app.config.js la agrega al compilar. Si un build no tiene la clave, la aplicación muestra la lista de lugares en lugar del mapa, en vez de cerrarse. Durante el desarrollo se probó una versión con Leaflet dentro de un WebView, que se descartó a pedido de la cátedra."),
   h2("Alcance de esta versión"),
-  p("Algunos puntos de la especificación dependen de recursos que todavía no están disponibles. La aplicación los resuelve de la siguiente manera hasta que lleguen."),
+  p("Algunos puntos de la especificación tienen límites o decisiones propias en esta versión."),
   table(
     [cell("Punto", { header: true, width: 2600 }), cell("Situación en esta versión", { header: true, width: 6400 })],
     [
-      ["Fotos de los lugares", "El cliente todavía no envió fotos. La ficha muestra una imagen con el color y el icono de la categoría; cuando lleguen las fotos se cargan en el campo correspondiente sin cambiar las pantallas."],
-      ["Datos de la API", "La capa de servicios trabaja con datos simulados que respetan la forma de respuesta de la API. Sin conexión, los pedidos fallan como fallaría la red real, y la aplicación muestra la última copia guardada."],
-      ["Favoritos y recorrido entre teléfonos", "Se guardan en el teléfono con expo-sqlite. Conservarlos al cambiar de teléfono requiere la API de la cátedra; la cola de visitas sin sincronizar ya está preparada para subirlas."],
+      ["Fotos de los lugares", "Las fotos las sirve la API de la cátedra desde su almacenamiento. Si un lugar no tiene foto, la ficha muestra una imagen con el color y el icono de su categoría."],
+      ["Datos de la API", "La aplicación consume la API de la cátedra (api-mi-ciudad), publicada por el grupo en Render con la base de datos y los archivos en Supabase. Sin conexión, muestra la última copia guardada en el teléfono."],
+      ["Servidor gratuito", "El plan gratuito de Render suspende la API cuando no se usa: la primera carga puede tardar cerca de un minuto, y la aplicación espera hasta sesenta segundos antes de mostrar el error."],
+      ["Favoritos y recorrido entre teléfonos", "Se guardan primero en el teléfono con expo-sqlite y se sincronizan con la cuenta en la API, así que se conservan al cambiar de teléfono. Las visitas registradas sin señal quedan en una cola y se suben al volver la conexión."],
       ["Aviso de proximidad", "Funciona mientras la aplicación está abierta. Avisar con la aplicación cerrada exigiría el permiso de ubicación permanente, que no se pide para este caso."],
     ],
     [2600, 6400],
@@ -117,14 +118,13 @@ const especificación = [
 
 const contrato = [
   h1("5. Contrato de datos con la API"),
-  p("La API de la cátedra todavía no está disponible. Mientras tanto, la aplicación se construye contra datos simulados que respetan exactamente la forma que va a tener la API real, para que el reemplazo, cuando llegue, se limite a la capa de servicios."),
+  p("La aplicación consume la API que publicó la cátedra para Mi Ciudad (api-mi-ciudad, construida con NestJS). Antes de que estuviera disponible, el equipo escribió un contrato preliminar a partir del PRD y construyó la aplicación contra datos de prueba con esa misma forma. Cuando la cátedra publicó la API, el cambio se limitó a la capa de servicios."),
   h2("Reglas de construcción"),
-  p("Los tipos de datos se escriben una sola vez y no se modifican cuando llegue la API real. Los datos simulados se guardan tipados con esos mismos tipos, incluyendo casos poco habituales: un lugar sin audioguía, uno sin teléfono, una lista vacía, un texto largo y un error de red. Ninguna pantalla lee los datos simulados de forma directa: toda lectura pasa por una capa de servicios, que hoy devuelve el dato simulado y más adelante hace la llamada real a la red. Los servicios son asincrónicos desde el primer día, aunque el dato simulado responda al instante."),
+  p("Los tipos de datos se escribieron una sola vez y coinciden con los de la API. Ninguna pantalla habla con la red: toda lectura pasa por la capa de servicios, que arma la dirección a partir de una variable de entorno, agrega el token de sesión, abre la envoltura de la respuesta y convierte cada error en un objeto con el código y el mensaje que manda la API. Los datos de prueba quedaron para los tests automáticos."),
   h2("Forma de la respuesta"),
   p("Toda respuesta exitosa de la API sigue el mismo formato, con los datos y la información de paginación. Toda respuesta de error sigue también un formato fijo, con un código identificable y un mensaje legible para mostrar en pantalla."),
-  h2("Contrato preliminar en formato OpenAPI"),
-  p("Se preparó un contrato preliminar en formato OpenAPI 3.0, en el archivo openapi.yaml de la raíz del proyecto, con los recursos de lugares, categorías, eventos, favoritos, visitas y autenticación. Este contrato documenta la forma exacta de la API tal como la describe el PRD del cliente, y sirve como referencia única mientras se construye la capa de servicios contra datos simulados. Se reemplaza o se ajusta en cuanto la cátedra publique la especificación oficial de su API."),
-  callout("Publicación en SwaggerHub pendiente. La cuenta de SwaggerHub conectada a este proyecto todavía no está autorizada. El contrato preliminar se mantiene por ahora como archivo openapi.yaml dentro del repositorio, y se sube a SwaggerHub en cuanto se autorice la conexión, o se reemplaza directamente por la documentación que publique la cátedra junto con su API."),
+  h2("Contrato preliminar y documentación de la API"),
+  p("El contrato preliminar está en el archivo openapi.yaml de la raíz del proyecto, en formato OpenAPI 3.0, con los recursos de lugares, categorías, eventos, favoritos, visitas y autenticación. La especificación completa de la API de la cátedra se consulta en la documentación Swagger que expone la propia API, en la ruta /docs."),
 ];
 
 const diseño = [
@@ -171,21 +171,20 @@ const diseño = [
   p("Los siete colores se eligieron con saturación y luminosidad parejas entre sí, para que ninguna categoría se vea más importante que otra en el mapa o en los filtros, y con suficiente distancia de tono entre pares para que se puedan distinguir incluso con dificultades de percepción de color comunes."),
   h2("Capturas de pantalla"),
   p("Las pantallas de la aplicación siguen las trece pantallas del documento Diseño Técnico y Pantallas, que se actualizó con los cambios hechos durante el desarrollo: la pestaña Mi perfil, las categorías favoritas y la opción de marcar un favorito desde el catálogo."),
-  callout("Pendiente. Las capturas del APK de entrega se agregan a esta sección cuando esté generado el build de release."),
 ];
 
 const arquitectura = [
   h1("7. Arquitectura del sistema"),
-  p("La aplicación se organiza en capas, siguiendo el criterio que fija el propio PRD del cliente para poder reemplazar los datos simulados por la API real sin reescribir pantallas. Cada capa solo conoce a la que tiene debajo."),
+  p("La aplicación se organiza en capas, siguiendo el criterio que fija el propio PRD del cliente: que el origen de los datos se pueda cambiar sin reescribir pantallas. Cada capa solo conoce a la que tiene debajo."),
   table(
     [cell("Capa", { header: true, width: 2200 }), cell("Responsabilidad", { header: true, width: 6800 })],
     [
       ["Pantallas", "Archivos de src app. Expo Router arma las rutas a partir de la carpeta, sin registrar nada a mano"],
       ["Componentes", "Piezas reutilizables en src components: botón, tarjeta de lugar, encabezado, reproductor de audioguía, flecha hacia el lugar, avisos de estado"],
       ["Hooks", "Lógica compartida en src hooks: sesión, tema, ubicación con sus permisos, conexión, aviso de proximidad y sincronización de visitas"],
-      ["Servicios", "Funciones asincrónicas en src servicios: datos de la API, base de datos local, copia sin conexión, notificaciones, archivos, audio y vibración. Es la única capa que cambia cuando la API esté disponible"],
+      ["Servicios", "Funciones asincrónicas en src servicios: datos de la API, base de datos local, copia sin conexión, notificaciones, archivos, audio y vibración. Es la única capa que habla con la API, por eso conectar la API de la cátedra no cambió las pantallas"],
       ["Utilidades", "Funciones puras en src utils, cubiertas por pruebas de unidad: distancias y rumbos, horarios, precios, fechas, códigos QR y reglas del aviso de proximidad"],
-      ["Tipos y datos simulados", "Interfaces de TypeScript en src tipos, escritas una sola vez a partir del contrato de datos, y datos de ejemplo tipados en src mocks"],
+      ["Tipos y datos de prueba", "Interfaces de TypeScript en src tipos, que coinciden con las de la API, y datos de prueba tipados en src mocks para los tests automáticos"],
     ],
     [2200, 6800],
   ),
@@ -226,12 +225,12 @@ const estado = [
       ["Confirmación de la propuesta por el equipo", "Confirmada el 3 de septiembre de 2026"],
       ["Integrantes del equipo", "Equipo completo: Fernando Ruben Bareiro Ruiz, Natalia Ailén Gonzalez, Ballejo Micaela Celeste y Fernando Rodriguez"],
       ["Repositorio Git del proyecto", "github.com/Ferchulobo777/mi-ciudad"],
-      ["Contrato de datos con la API", "Borrador en openapi.yaml, usado con datos simulados hasta que la cátedra publique su API"],
+      ["API de la cátedra", "Conectada y publicada en Render, con la base de datos y los archivos en Supabase"],
       ["Aplicación", "Trece pantallas construidas y los diez requisitos mínimos implementados"],
-      ["Pruebas", "104 pruebas de unidad con Jest y dos flujos de prueba de punta a punta con Maestro"],
-      ["Build de release (APK)", "Pendiente de generar con el perfil preview de EAS"],
-      ["Fecha de entrega", "A confirmar según el Campus Virtual"],
-      ["Fecha de defensa oral", "A confirmar según la cátedra"],
+      ["Pruebas", "108 pruebas de unidad con Jest y dos flujos de prueba de punta a punta con Maestro"],
+      ["Build de release (APK)", "Generado con el perfil preview de EAS y disponible en Google Drive"],
+      ["Fecha de entrega", "15 de noviembre de 2026, según el Campus Virtual"],
+      ["Defensa", "En video, entregado junto con el trabajo"],
     ],
     [5000, 4000],
   ),
@@ -239,6 +238,7 @@ const estado = [
 
 const doc = new Document({
   creator: "Fernando Rodriguez",
+  lastModifiedBy: "Fernando Rodriguez",
   title: "Documentación Oficial del Proyecto, Trabajo Integrador de Desarrollo para Móviles",
   styles: { default: { document: { run: { font: "Calibri", size: 22 } } } },
   sections: [

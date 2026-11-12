@@ -1,6 +1,6 @@
-// Interfaces escritas una sola vez a partir del contrato de datos en openapi.yaml.
-// No se modifican cuando llegue la API real de la cátedra: es la capa de servicios
-// la que va a cambiar, no los tipos.
+// Interfaces escritas a partir del contrato de datos (openapi.yaml) y que
+// coinciden con las de la API de la cátedra. Cuando se conectó la API real solo
+// cambió la capa de servicios: ni los tipos ni las pantallas.
 
 export interface Coordenadas {
   latitud: number;

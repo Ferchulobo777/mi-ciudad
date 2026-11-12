@@ -42,10 +42,5 @@ example
 /ios
 /android
 
-# configuración de herramientas de desarrollo local, no forma parte del proyecto entregado
-CLAUDE.md
-.claude/
-.agents/
-.mcp.json
-skills-lock.json
+# credenciales de Firebase: se cargan como variable de EAS al compilar
 google-services.json

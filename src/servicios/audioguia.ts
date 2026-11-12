@@ -2,11 +2,11 @@ import { Directory, File, Paths } from "expo-file-system";
 import { setAudioModeAsync, type AudioSource } from "expo-audio";
 import type { Audioguia } from "@/tipos";
 
-// Todavía no hay audioguías reales entregadas por el municipio: la única que
-// existe en los datos simulados apunta a una URL de prueba que no resuelve.
-// En vez de dejar el link roto, se sirve un audio propio empaquetado en la
-// app. El día que la API real devuelva otra URL, se la trata como cualquier
-// audio remoto: se reproduce desde la red o desde la copia descargada.
+// Los datos de prueba (src/mocks) traen una audioguía con una URL que no
+// resuelve. En vez de dejar el link roto, esa URL puntual se reemplaza por un
+// audio propio empaquetado en la app. Las audioguías que manda la API se tratan
+// como cualquier audio remoto: se reproducen desde la red o desde la copia
+// descargada.
 const URL_MOCK_MOLINO_FORCLAZ = "https://cdn.miciudad.app/audioguias/molino-forclaz.mp3";
 
 // Las audioguías descargadas van a la caché y no a documentos: es contenido

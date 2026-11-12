@@ -43,7 +43,7 @@ function claveProximidad(usuarioId: string): string {
   return `proximidad:${usuarioId}`;
 }
 
-// Arranca apagado aunque el usuario simulado lo tenga en true: prenderlo
+// Arranca apagado aunque la cuenta lo tenga activado: prenderlo
 // implica pedir dos permisos (ubicación y notificaciones), y eso tiene que
 // pasar por un gesto del turista en Mi perfil, no de manera implícita.
 export function leerPreferenciaProximidad(usuarioId: string): PreferenciaProximidad {

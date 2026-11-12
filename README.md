@@ -20,11 +20,14 @@ seguir funcionando sin conexión (el caso de referencia es el Parque Nacional El
 
 ## Instalar la app
 
-APK de Android: **https://expo.dev/artifacts/eas/QDJaO3Cv7D1nBY1i_HE3rBNPpzBVZ6IPOL545NrWFm8.apk**
+APK de Android (Google Drive): **https://drive.google.com/drive/folders/1xV6Ms3GBjM7A561hJFtOSqv_R_KbrIHq**
 
-Abrir el link desde el teléfono, descargar e instalar (Android pide permitir la instalación de
-apps de origen desconocido). La app usa la API publicada en `https://api-mi-ciudad-ex12.onrender.com`;
-el servidor gratuito se suspende sin uso, así que la primera carga puede demorar cerca de un minuto.
+Abrir el link desde el teléfono, tocar `Mi-Ciudad.apk`, descargarlo (pesa unos 140 MB) e
+instalarlo. Android pide permitir la instalación de apps de origen desconocido porque la app no
+viene de Play Store. Es el APK de release generado con el perfil `preview` de EAS.
+
+La app usa la API publicada en `https://api-mi-ciudad-ex12.onrender.com`. El servidor gratuito se
+suspende cuando no se usa, así que la primera carga puede demorar cerca de un minuto.
 
 Cuentas de demo:
 
@@ -106,4 +109,7 @@ src/
 ## Documentación
 
 En `Informe-Analisis-Propuestas/`: análisis de las propuestas, documentación del proyecto y
-diseño técnico con las pantallas. Los mockups están en `Mockups-Propuestas/`.
+diseño técnico con las pantallas, en PDF y Word. Los mockups de las pantallas están en
+`Mockups-Propuestas/exports/` y los diagramas de casos de uso y de clases, en `Mockups-Propuestas/`.
+El contrato de datos preliminar está en `openapi.yaml`; la documentación completa de la API de la
+cátedra se consulta en `/docs` de la API publicada.

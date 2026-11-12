@@ -149,9 +149,8 @@ export default function MiPerfil() {
   }
 
   if (!usuario) {
-    // El formulario va directo acá, sin una pantalla intermedia de "todavía
-    // no ingresaste": ingresar ya te deja en esta misma pestaña, ahora con
-    // sesión, sin un paso de navegación de más.
+    // Sin sesión, la pestaña muestra el formulario directamente: al ingresar,
+    // el turista queda en esta misma pantalla, ya con su perfil cargado.
     return (
       <SafeAreaView style={[styles.contenedor, { backgroundColor: tema.fondo }]}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>

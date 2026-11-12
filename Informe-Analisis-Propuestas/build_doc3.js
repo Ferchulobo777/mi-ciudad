@@ -8,7 +8,7 @@ const {
 const OUT = __dirname + "\\3 - Diseño Técnico y Pantallas, Mi Ciudad.docx";
 
 const cover = coverBase({
-  titulo: "Diseño Técnico y Pantallas — Mi Ciudad",
+  titulo: "Diseño Técnico y Pantallas, Mi Ciudad",
   bajada: "Requisitos funcionales y no funcionales, casos de uso, diagrama de clases y pantallas completas de la aplicación, con la paleta Costa Entrerriana",
 });
 
@@ -106,7 +106,7 @@ const requisitosNoFuncionales = [
       ["RNF06", "Rendimiento: las pantallas con listados largos, como el catálogo y la agenda, no bloquean la interacción mientras cargan."],
       ["RNF07", "Compatibilidad: la aplicación corre sobre Expo SDK 57 y React Native 0.86, en Android e iOS."],
       ["RNF08", "Resguardo de permisos: si el turista niega el permiso de ubicación, la aplicación sigue siendo usable con el listado y el mapa, sin posición propia."],
-      ["RNF09", "Mantenibilidad: toda lectura de datos pasa por una capa de servicios propia, para poder reemplazar los datos simulados por la API real sin reescribir pantallas."],
+      ["RNF09", "Mantenibilidad: toda lectura de datos pasa por una capa de servicios propia, para que el origen de los datos se pueda cambiar sin reescribir pantallas."],
       ["RNF10", "Identidad: ícono propio en formato PNG de 1024 por 1024 píxeles sin transparencias, y pantalla de presentación con el nombre del producto."],
     ],
     [900, 8100],
@@ -145,11 +145,11 @@ const diagramaClases = [
   table(
     [cell("Relación", { header: true, width: 3000 }), cell("Por qué existe", { header: true, width: 6000 })],
     [
-      ["Categoria (1) — Lugar (*)", "Cada lugar pertenece a una sola categoría del catálogo; una categoría agrupa muchos lugares."],
-      ["Lugar (0..1) — Evento (*)", "Un evento puede ocurrir en un lugar del catálogo o en una dirección suelta (direccionLibre), por eso la relación es opcional."],
-      ["Usuario (1) — Preferencias (1)", "Preferencias es un objeto de configuración propio de cada usuario, no una entidad independiente: es una composición, no existe sin el usuario."],
-      ["Usuario (1) — Favorito (*) — Lugar (1)", "Favorito es una clase de asociación: registra qué usuario marcó qué lugar y cuándo."],
-      ["Usuario (1) — Visita (*) — Lugar (1)", "Visita es la otra clase de asociación central del proyecto: guarda el registro de un recorrido, con su estado de sincronización."],
+      ["Categoria (1) a Lugar (*)", "Cada lugar pertenece a una sola categoría del catálogo; una categoría agrupa muchos lugares."],
+      ["Lugar (0..1) a Evento (*)", "Un evento puede ocurrir en un lugar del catálogo o en una dirección suelta (direccionLibre), por eso la relación es opcional."],
+      ["Usuario (1) a Preferencias (1)", "Preferencias es un objeto de configuración propio de cada usuario, no una entidad independiente: es una composición, no existe sin el usuario."],
+      ["Usuario (1), Favorito (*) y Lugar (1)", "Favorito es una clase de asociación: registra qué usuario marcó qué lugar y cuándo."],
+      ["Usuario (1), Visita (*) y Lugar (1)", "Visita es la otra clase de asociación central del proyecto: guarda el registro de un recorrido, con su estado de sincronización."],
     ],
     [3000, 6000],
   ),
@@ -198,12 +198,13 @@ const pantallas = [
 
 const doc = new Document({
   creator: "Fernando Rodriguez",
-  title: "Diseño Técnico y Pantallas, Mi Ciudad — Trabajo Integrador de Desarrollo para Móviles",
+  lastModifiedBy: "Fernando Rodriguez",
+  title: "Diseño Técnico y Pantallas, Mi Ciudad. Trabajo Integrador de Desarrollo para Móviles",
   styles: { default: { document: { run: { font: "Calibri", size: 22 } } } },
   sections: [
     {
       properties: { page: { margin: { top: 1080, bottom: 1080, left: 1080, right: 1080 } }, titlePage: true },
-      ...headerFooter("Diseño Técnico y Pantallas, Mi Ciudad — Trabajo Integrador de Desarrollo para Móviles"),
+      ...headerFooter("Diseño Técnico y Pantallas, Mi Ciudad. Trabajo Integrador de Desarrollo para Móviles"),
       children: [
         ...cover, ...toc(), ...intro, ...requisitosFuncionales, ...requisitosNoFuncionales,
         ...casosDeUso, ...diagramaClases, ...pantallas,
