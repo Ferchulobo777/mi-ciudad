@@ -209,8 +209,8 @@ const arquitectura = [
     [
       ["Fernando Rodriguez", "Presentación del proyecto, repositorio, pruebas y entrega del build"],
       ["Natalia Ailén Gonzalez", "Diseño de interfaz: pantallas, paleta y temas, navegación, componentes, accesibilidad e identidad de la aplicación"],
-      ["Ballejo Micaela Celeste", "Cuenta y seguridad, registro de visitas con cámara, código QR y archivos, vibración y notificaciones"],
       ["Fernando Ruben Bareiro Ruiz", "Capa de servicios y datos, persistencia y funcionamiento sin conexión, ubicación, mapa y magnetómetro"],
+      ["Micaela Celeste Ballejo", "Cuenta y seguridad, registro de visitas con cámara, código QR y archivos, vibración y notificaciones"],
     ],
     [2800, 6200],
   ),
@@ -223,7 +223,7 @@ const estado = [
     [
       ["Propuesta elegida", "Mi Ciudad, guía turística de Colón"],
       ["Confirmación de la propuesta por el equipo", "Confirmada el 3 de septiembre de 2026"],
-      ["Integrantes del equipo", "Equipo completo: Fernando Ruben Bareiro Ruiz, Natalia Ailén Gonzalez, Ballejo Micaela Celeste y Fernando Rodriguez"],
+      ["Integrantes del equipo", "Equipo completo: Fernando Rodriguez, Natalia Ailén Gonzalez, Fernando Ruben Bareiro Ruiz y Micaela Celeste Ballejo"],
       ["Repositorio Git del proyecto", "github.com/Ferchulobo777/mi-ciudad"],
       ["API de la cátedra", "Conectada y publicada en Render, con la base de datos y los archivos en Supabase"],
       ["Aplicación", "Trece pantallas construidas y los diez requisitos mínimos implementados"],

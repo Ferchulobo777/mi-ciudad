@@ -15,8 +15,8 @@ seguir funcionando sin conexión (el caso de referencia es el Parque Nacional El
 
 - Fernando Rodriguez
 - Natalia Ailén Gonzalez
-- Ballejo Micaela Celeste
 - Fernando Ruben Bareiro Ruiz
+- Micaela Celeste Ballejo
 
 ## Instalar la app
 

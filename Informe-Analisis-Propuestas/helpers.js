@@ -140,10 +140,10 @@ function coverBase({ titulo, subtitulo, bajada }) {
     new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 60 }, children: [new TextRun({ text: bajada, size: 18, color: "777777" })] }),
 
     new Paragraph({ spacing: { before: 700, after: 60 }, children: [new TextRun({ text: "Integrantes del equipo", bold: true, size: 22 })] }),
-    new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "Fernando Ruben Bareiro Ruiz", size: 20 })] }),
+    new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "Fernando Rodriguez", size: 20 })] }),
     new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "Natalia Ailén Gonzalez", size: 20 })] }),
-    new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "Ballejo Micaela Celeste", size: 20 })] }),
-    new Paragraph({ spacing: { after: 260 }, children: [new TextRun({ text: "Fernando Rodriguez", size: 20 })] }),
+    new Paragraph({ spacing: { after: 40 }, children: [new TextRun({ text: "Fernando Ruben Bareiro Ruiz", size: 20 })] }),
+    new Paragraph({ spacing: { after: 260 }, children: [new TextRun({ text: "Micaela Celeste Ballejo", size: 20 })] }),
 
     new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Profesor Titular: Lic. Franco Ruis Dias", size: 20 })] }),
     new Paragraph({ spacing: { after: 60 }, children: [new TextRun({ text: "Jefe de Trabajos Prácticos: Lic. Germán Cueva", size: 20 })] }),
