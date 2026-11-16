@@ -108,8 +108,8 @@ src/
 
 ## Documentación
 
-En `Informe-Analisis-Propuestas/`: análisis de las propuestas, documentación del proyecto y
-diseño técnico con las pantallas, en PDF y Word. Los mockups de las pantallas están en
-`Mockups-Propuestas/exports/` y los diagramas de casos de uso y de clases, en `Mockups-Propuestas/`.
-El contrato de datos preliminar está en `openapi.yaml`; la documentación completa de la API de la
-cátedra se consulta en `/docs` de la API publicada.
+En `docs/`: la documentación oficial del proyecto y el diseño técnico con las pantallas, en PDF.
+Los mockups de cada pantalla y la paleta de colores están en `docs/pantallas/`, y los diagramas de
+casos de uso y de clases, en `docs/diagramas/`. El contrato de datos preliminar está en
+`openapi.yaml`; la documentación completa de la API de la cátedra se consulta en `/docs` de la API
+publicada.
